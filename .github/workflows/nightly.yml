@@ -1,0 +1,53 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # run at 2 AM UTC
+
+
+jobs:
+  nightly-windows-cli:
+    name: Windows Nightly 
+    runs-on: windows-latest
+    env:
+        SIMCDIR: ${{ github.workspace }}
+        INSTALL: ${{ github.workspace }}/install
+        INSTALLDIR: ${{ github.workspace }}/install
+        targetConfiguration: Release
+        architecture: x64
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: simulationcraft/simc
+          ref: shadowlands
+
+      - name: Get git hash
+        id: git_hash
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: Add MSBuild and MS C++ Compiler to path
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86_amd64
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          modules: qtwebengine
+
+      - name: Create Install Directory
+        run: mkdir ${{ env.INSTALL }}
+
+      - name: Build
+        env:
+          SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
+        run: |
+          $env:QTDIR = "$env:Qt5_DIR"
+          $env:GITREV = "${{ steps.git_hash.outputs.sha_short }}"
+          WinReleaseScripts\build-simc.bat ${{ env.targetConfiguration }} ${{ env.architecture }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: simc-nightly-windows-${{ steps.git_hash.outputs.sha_short }}
+          path: ${{ env.INSTALL }}/**
