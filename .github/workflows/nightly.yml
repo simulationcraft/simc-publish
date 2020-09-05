@@ -12,9 +12,9 @@ jobs:
     env:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}/install
-        INSTALLDIR: ${{ github.workspace }}/install
         targetConfiguration: Release
         architecture: x64
+        SZIP: "C:/Program Files/7-Zip"
 
     steps:
       - uses: actions/checkout@v2
@@ -46,8 +46,8 @@ jobs:
           $env:QTDIR = "$env:Qt5_DIR"
           $env:GITREV = "${{ steps.git_hash.outputs.sha_short }}"
           WinReleaseScripts\build-simc.bat ${{ env.targetConfiguration }} ${{ env.architecture }}
-
+      
       - uses: actions/upload-artifact@v2
         with:
           name: simc-nightly-windows-${{ steps.git_hash.outputs.sha_short }}
-          path: ${{ env.INSTALL }}/**
+          path: ${{ env.INSTALL }}/*.7z
