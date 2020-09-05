@@ -17,7 +17,6 @@ jobs:
     env:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}/install
-        SZIP: "C:/Program Files/7-Zip"
     strategy:
       matrix:
         architecture: [x64]
@@ -54,6 +53,7 @@ jobs:
           SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
         run: |
           $env:QTDIR = "$env:Qt5_DIR"
+          $env:SZIP = "$env:ProgramFiles\7-Zip"
           $env:GITREV = "${{ steps.git_hash.outputs.sha_short }}"
           WinReleaseScripts\build-simc.bat ${{ matrix.targetConfiguration }} ${{ matrix.architecture }}
       
