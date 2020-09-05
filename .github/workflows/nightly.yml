@@ -69,8 +69,9 @@ jobs:
         run:  cp "${{ env.INSTALL }}\*.7z" "${{ env.uploadDir }}\"
           
 
+      # Use specific commit id here to fix known-hosts input not working.
       - name: FTP-Deploy-Action
-        uses: SamKirkland/FTP-Deploy-Action@3.1.1
+        uses: SamKirkland/FTP-Deploy-Action@79e6bdd312b1987e6e273791fbf0ca737d446f55
         with:
           ftp-server: ${{ secrets.UPLOAD_FTP_ADDRESS }}
           ftp-username: ${{ secrets.UPLOAD_USER }}
