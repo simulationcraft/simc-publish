@@ -83,7 +83,8 @@ jobs:
       # Use specific commit id here to fix known-hosts input not working.
       - name: SFTP Upload
         run: |
-          echo "${{ secrets.UPLOAD_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          mkdir -p ~/.ssh
+          echo "${{ secrets.UPLOAD_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           sshpass -e sftp ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_FTP_ADDRESS }}:${{ env.remote-dir }} <<< $'put ${{ env.local-dir }}/*.7z'
 
         env:
