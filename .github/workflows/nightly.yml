@@ -12,9 +12,14 @@ jobs:
     env:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}/install
-        targetConfiguration: Release
-        architecture: x64
         SZIP: "C:/Program Files/7-Zip"
+    strategy:
+      matrix:
+        architecture: [x64]
+        targetConfiguration: [Release]
+        include:
+          - architecture: x64
+            cl_architecture: x86_amd64
 
     steps:
       - uses: actions/checkout@v2
@@ -29,7 +34,7 @@ jobs:
       - name: Add MSBuild and MS C++ Compiler to path
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: x86_amd64
+          arch: ${{ matrix.cl_architecture }}
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
@@ -45,9 +50,9 @@ jobs:
         run: |
           $env:QTDIR = "$env:Qt5_DIR"
           $env:GITREV = "${{ steps.git_hash.outputs.sha_short }}"
-          WinReleaseScripts\build-simc.bat ${{ env.targetConfiguration }} ${{ env.architecture }}
+          WinReleaseScripts\build-simc.bat ${{ matrix.targetConfiguration }} ${{ matrix.architecture }}
       
       - uses: actions/upload-artifact@v2
         with:
-          name: simc-nightly-windows-${{ steps.git_hash.outputs.sha_short }}
+          name: simc-nightly-windows-${{ matrix.targetConfiguration }}-${{ matrix.architecture }}-${{ steps.git_hash.outputs.sha_short }}
           path: ${{ env.INSTALL }}/*.7z
