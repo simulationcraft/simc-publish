@@ -11,7 +11,7 @@ on:
 
 
 jobs:
-  nightly-windows-cli:
+  nightly-build-windows:
     name: Windows Nightly 
     runs-on: windows-latest
     env:
@@ -62,19 +62,26 @@ jobs:
       
       - uses: actions/upload-artifact@v2
         with:
-          name: simc-nightly-windows-${{ matrix.targetConfiguration }}-${{ matrix.architecture }}-${{ steps.git_hash.outputs.sha_short }}
+          name: simc-nightly-windows
           path: ${{ env.INSTALL }}\*.7z
-      
-      - name: Prepare FTP Upload
-        run:  cp "${{ env.INSTALL }}\*.7z" "${{ env.uploadDir }}\"
-          
+
+
+  
+  nightly-upload:
+    runs-on: ubuntu-latest
+    needs: [nightly-build-windows]
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: simc-nightly-windows
+          path: ${{ github.workspace }}/artifacts
 
       # Use specific commit id here to fix known-hosts input not working.
-      - name: FTP-Deploy-Action
+      - name: SFTP Upload
         uses: SamKirkland/FTP-Deploy-Action@79e6bdd312b1987e6e273791fbf0ca737d446f55
         with:
           ftp-server: ${{ secrets.UPLOAD_FTP_ADDRESS }}
           ftp-username: ${{ secrets.UPLOAD_USER }}
           ftp-password: ${{ secrets.UPLOAD_PASSWORD }}
           known-hosts: ${{ secrets.UPLOAD_KNOWN_HOSTS }}
-          local-dir: ${{ env.uploadDir }}
+          local-dir: ${{ github.workspace }}/artifacts
