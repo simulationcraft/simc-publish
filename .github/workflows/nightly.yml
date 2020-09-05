@@ -71,6 +71,10 @@ jobs:
     needs: [nightly-build-windows]
 
     steps:
+      - name: Install sftp utils
+        run: |
+          sudo apt install sshpass
+
       - uses: actions/download-artifact@v2
         with:
           name: simc-nightly-windows
@@ -78,10 +82,12 @@ jobs:
 
       # Use specific commit id here to fix known-hosts input not working.
       - name: SFTP Upload
-        uses: SamKirkland/FTP-Deploy-Action@79e6bdd312b1987e6e273791fbf0ca737d446f55
-        with:
-          ftp-server: ${{ secrets.UPLOAD_FTP_ADDRESS }}
-          ftp-username: ${{ secrets.UPLOAD_USER }}
-          ftp-password: ${{ secrets.UPLOAD_PASSWORD }}
+        run: |
+          echo "${{ secrets.UPLOAD_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          sshpass -e sftp ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_FTP_ADDRESS }}:${{ env.remote-dir }} <<< $'put ${{ env.local-dir }}/*.7z'
+
+        env:
+          SSHPASS: ${{ secrets.UPLOAD_PASSWORD }}
           known-hosts: ${{ secrets.UPLOAD_KNOWN_HOSTS }}
+          remote-dir: /
           local-dir: ${{ github.workspace }}/artifacts
