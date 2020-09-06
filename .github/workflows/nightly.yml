@@ -32,9 +32,11 @@ jobs:
           - architecture: x86
             cl_architecture: amd64_x86
             package_suffix: win32
+            qt_arch: win32_msvc2017
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
+            qt_arch: win64_msvc2017_64
 
     steps:
       - uses: actions/checkout@v2
@@ -55,6 +57,7 @@ jobs:
         uses: jurplel/install-qt-action@v2
         with:
           modules: qtwebengine
+          arch:${{ matrix.qt_arch }}
 
       - name: Create Install & Upload Directory
         run: |
@@ -71,6 +74,9 @@ jobs:
           $env:SZIP = "$env:ProgramFiles\7-Zip"
           $env:GITREV = "${{ steps.git_hash.outputs.sha_short }}"
           WinReleaseScripts\build-simc.bat ${{ matrix.targetConfiguration }} ${{ matrix.architecture }}
+
+      - name: Extract Simc Version info
+        run: |
           $env:simc_major = Get-Content $env:configHeader | Select-String '#define SC_MAJOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           $env:simc_minor = Get-Content $env:configHeader | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           echo "::set-output name=cli-executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}\simc.exe")"
