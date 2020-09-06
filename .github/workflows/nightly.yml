@@ -76,7 +76,7 @@ jobs:
           echo "::set-output name=cli-executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}\simc.exe")"
       
       - name: Smoke Test
-        run: ${{ steps.build.cli-executable}}" ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
+        run: ${{ steps.build.cli-executable}} ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
 
       - uses: actions/upload-artifact@v2
         with:
