@@ -67,7 +67,6 @@ jobs:
       - name: Build
         env:
           SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
-          configHeader: engine/config.hpp
         run: |
           $env:QTDIR = "$env:Qt5_DIR"
           $env:SZIP = "$env:ProgramFiles\7-Zip"
@@ -76,6 +75,8 @@ jobs:
 
       - name: Extract Simc Version info
         id: simc_info
+        env:
+          configHeader: engine/config.hpp
         run: |
           $env:simc_major = Get-Content $env:configHeader | Select-String '#define SC_MAJOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           $env:simc_minor = Get-Content $env:configHeader | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
