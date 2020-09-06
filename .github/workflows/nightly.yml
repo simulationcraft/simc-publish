@@ -116,7 +116,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.UPLOAD_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          sshpass -e sftp ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'put ${{ env.local-dir }}/*.7z'
+          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'put ${{ env.local-dir }}/*.7z'
 
         env:
           SSHPASS: ${{ secrets.UPLOAD_PASSWORD }}
