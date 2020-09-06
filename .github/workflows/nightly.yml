@@ -8,6 +8,10 @@ on:
       justification:
         description: "Reason for manual run"
         required: true
+      uploadResult:
+        description: "Should the resulting file be uploaded or not"
+        required: true
+        default: false
 
 env:
   SIMC_PROFILE: profiles/CI.simc
@@ -84,6 +88,7 @@ jobs:
     name: Nightly Upload ${{ matrix.package_suffix }}
     runs-on: ubuntu-latest
     needs: [nightly-build-windows]
+    if: ${{ github.event.inputs.uploadResult }}
     strategy:
       matrix:
         package_suffix: [win32, win64]
