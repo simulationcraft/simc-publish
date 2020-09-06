@@ -59,13 +59,12 @@ jobs:
           modules: qtwebengine
           arch:${{ matrix.qt_arch }}
 
-      - name: Create Install & Upload Directory
+      - name: Create Install and Upload Directory
         run: |
           mkdir ${{ env.INSTALL }}
           mkdir ${{ env.uploadDir }}
 
       - name: Build
-        id: build
         env:
           SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
           configHeader: engine/config.hpp
@@ -76,13 +75,15 @@ jobs:
           WinReleaseScripts\build-simc.bat ${{ matrix.targetConfiguration }} ${{ matrix.architecture }}
 
       - name: Extract Simc Version info
+        id: simc_info
         run: |
           $env:simc_major = Get-Content $env:configHeader | Select-String '#define SC_MAJOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           $env:simc_minor = Get-Content $env:configHeader | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
-          echo "::set-output name=cli-executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}\simc.exe")"
+          echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}\simc.exe")"
       
       - name: Smoke Test
-        run: ${{ steps.build.cli-executable}} ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
+        run: |
+          & "${{ steps.simc_info.cli_executable}}"" ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
 
       - uses: actions/upload-artifact@v2
         with:
