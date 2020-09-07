@@ -95,7 +95,7 @@ jobs:
     name: Nightly Upload ${{ matrix.package_suffix }}
     runs-on: ubuntu-latest
     needs: [nightly-build-windows]
-    if: ${{ github.event.inputs.dryRun }}
+    if: ${{ !github.event.inputs.dryRun }}
     strategy:
       matrix:
         package_suffix: [win32, win64]
