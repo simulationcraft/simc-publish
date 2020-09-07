@@ -2,7 +2,7 @@ name: Nightly
 
 on:
   schedule:
-    - cron: '0 2 * * *' # run at 2 AM UTC
+    - cron: '0 0 * * *' # run at 0 AM UTC
     - cron: '0 0 * * 0' # At 00:00 on Sunday.
   workflow_dispatch:
     inputs:
@@ -43,6 +43,8 @@ jobs:
             if:  ${{ env.weekly }}
           - source_branch: bfa-dev
             if: ${{ env.weekly }}
+          - source_branch: shadowlands
+            if: ${{ !env.weekly }}
           - architecture: x86
             cl_architecture: amd64_x86
             package_suffix: win32
