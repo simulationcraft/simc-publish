@@ -3,7 +3,6 @@ name: Nightly
 on:
   schedule:
     - cron: '0 0 * * *' # run at 0 AM UTC
-    - cron: '0 0 * * 0' # At 00:00 on Sunday.
   workflow_dispatch:
     inputs:
       justification:
@@ -12,10 +11,6 @@ on:
       dryRun:
         description: "If true, do not upload files"
         default: true
-      weekly:
-        description: "If true, build weekly"
-        default: false
-    
 
 env:
   SIMC_PROFILE: profiles/CI.simc
@@ -28,7 +23,6 @@ jobs:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}\install
         uploadDir: ${{ github.workspace }}\upload
-        weekly: ${{ (github.event_name == 'schedule' && github.event.cron == '0 0 * * 0') || github.event.inputs.weekly }}
     strategy:
       matrix:
         architecture: [x86, x64]
@@ -37,14 +31,6 @@ jobs:
         include:
           - source_branch: shadowlands
             run_smokeTest: true
-          - source_branch: shadowlands
-            architecture: x86
-            targetConfiguration: Debug
-            if:  ${{ env.weekly }}
-          - source_branch: bfa-dev
-            if: ${{ env.weekly }}
-          - source_branch: shadowlands
-            if: ${{ !env.weekly }}
           - architecture: x86
             cl_architecture: amd64_x86
             package_suffix: win32
