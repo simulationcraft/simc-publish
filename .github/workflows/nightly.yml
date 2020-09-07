@@ -29,6 +29,8 @@ jobs:
         targetConfiguration: [Release]
         source_branch: [shadowlands, bfa-dev]
         include:
+          - source_branch: shadowlands
+            run_smokeTest: true
           - architecture: x86
             cl_architecture: amd64_x86
             package_suffix: win32
@@ -85,6 +87,7 @@ jobs:
           WinReleaseScripts\build-simc.bat ${{ matrix.targetConfiguration }} ${{ matrix.architecture }}
 
       - name: Smoke Test
+        if: ${{ matrix.run_smokeTest }}
         run: |
           & "${{ steps.simc_info.outputs.cli_executable}}" ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
 
