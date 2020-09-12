@@ -106,6 +106,12 @@ jobs:
       matrix:
         package_suffix: [win32, win64]
         source_branch: [shadowlands, bfa-dev]
+        include:
+          - source_branch: shadowlands
+            major_version: 9
+          - source_branch: bfa-dev
+            major_version: 8
+      
 
     steps:
       - name: Install sftp utils
@@ -122,6 +128,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.UPLOAD_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'rm simc-${{ matrix.major_version }}*-*-${{ matrix.package_suffix }}-*.7z'
           sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'put ${{ env.local-dir }}/*.7z'
 
         env:
