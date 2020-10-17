@@ -27,7 +27,6 @@ jobs:
             run_smokeTest: true
           - architecture: macos
             package_suffix: macos
-            qt_arch: clang_64
 
     steps:
       - uses: actions/checkout@v2
@@ -60,7 +59,7 @@ jobs:
         env:
           SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
         run: |
-          $Qt5_DIR/clang_64/bin/qmake LTO=1 simulationcraft.pro
+          $Qt5_DIR/bin/qmake LTO=1 simulationcraft.pro
           make -j $(sysctl -n hw.ncpu) create_release
 
       - name: Smoke Test
