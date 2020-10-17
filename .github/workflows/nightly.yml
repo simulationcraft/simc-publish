@@ -16,6 +16,67 @@ env:
   SIMC_PROFILE: profiles/CI.simc
 
 jobs:
+  nightly-build-macos:
+    name: MacOS Nightly
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        source_branch: [shadowlands, bfa-dev]
+        include:
+          - source_branch: shadowlands
+            run_smokeTest: true
+          - architecture: macos
+            package_suffix: macos
+            qt_arch: clang_64
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: simulationcraft/simc
+          ref: ${{ matrix.source_branch }}
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          modules: qtwebengine
+
+      - name: Get git hash
+        id: git_hash
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: Extract Simc Version info and setup output information
+        id: simc_info
+        env:
+          configHeader: engine/config.hpp
+        run: |
+          $env:simc_major = grep -E -e "^#define SC_MAJOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MAJOR_VERSION \"([0-9]+)\"/\1/g")
+          $env:simc_minor = grep -E -e "^#define SC_MINOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MINOR_VERSION \"([0-9]+)\"/\1/g")
+          $env:simc_version = $env:simc_major-$env:simc_minor
+          echo "::set-output name=simc_version::$(echo "$env:simc_version")"
+          echo "::set-output name=simc_output_file::$(echo "simc-$env:simc_version-osx-x86.dmg")"
+          echo "::set-output name=simc_nightly_file::$(echo "simc-$env:simc_version-${{ matrix.architecture }}-${{ steps.git_hash.outputs.sha_short }}.dmg")"
+
+      - name: Build and create a release package
+        env:
+          SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
+        run: |
+          $env:Qt5_DIR/clang_64/bin/qmake LTO=1 simulationcraft.pro
+          make -j $(sysctl -n hw.ncpu) create_release
+
+      - name: Smoke Test
+        if: ${{ matrix.run_smokeTest }}
+        run: |
+          ./simc ${{ env.SIMC_PROFILE }} iterations=5 output=/dev/null html=/dev/null json2=/dev/null cleanup_threads=1
+
+      - name: Rename DMG file to nightly format
+        run: |
+          mv ${{ steps.simc_info.outputs.simc_output_file }} ${{ steps.simc_info.outputs.simc_nightly_file }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: simc-nightly-${{ matrix.architecture }}-${{ matrix.source_branch }}
+          path: ${{ steps.simc_info.outputs.simc_nightly_file }}
+
   nightly-build-windows:
     name: Windows Nightly ${{ matrix.architecture }} ${{ matrix.source_branch }}
     runs-on: windows-latest
@@ -75,11 +136,11 @@ jobs:
           $env:simc_minor = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}\simc.exe")"
           echo "::set-output name=simc_version::$(echo "$env:simc_major-$env:simc_minor")"
-      
+
       - name: Build
         env:
           SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
-          SIMCVERSION: ${{ steps.simc_info.outputs.simc_version}}  
+          SIMCVERSION: ${{ steps.simc_info.outputs.simc_version}}
         run: |
           $env:QTDIR = "$env:Qt5_DIR"
           $env:SZIP = "$env:ProgramFiles\7-Zip"
@@ -111,7 +172,6 @@ jobs:
             major_version: 9
           - source_branch: bfa-dev
             major_version: 8
-      
 
     steps:
       - name: Install sftp utils
@@ -136,3 +196,4 @@ jobs:
           known-hosts: ${{ secrets.UPLOAD_KNOWN_HOSTS }}
           remote-dir: /
           local-dir: ${{ github.workspace }}/artifacts
+
