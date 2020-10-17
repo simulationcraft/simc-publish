@@ -26,7 +26,6 @@ jobs:
           - source_branch: shadowlands
             run_smokeTest: true
           - architecture: macos
-            package_suffix: macos
 
     steps:
       - uses: actions/checkout@v2
@@ -87,7 +86,7 @@ jobs:
       matrix:
         architecture: [x86, x64]
         targetConfiguration: [Release]
-        source_branch: [shadowlands, bfa-dev]
+        source_branch: [shadowlands]
         include:
           - source_branch: shadowlands
             run_smokeTest: true
@@ -160,17 +159,21 @@ jobs:
   nightly-upload:
     name: Nightly Upload ${{ matrix.source_branch }} ${{ matrix.package_suffix }}
     runs-on: ubuntu-latest
-    needs: [nightly-build-windows]
+    needs: [nightly-build-windows nightly-build-macos]
     if: ${{ !github.event.inputs.dryRun }}
     strategy:
       matrix:
-        package_suffix: [win32, win64]
-        source_branch: [shadowlands, bfa-dev]
+        package_suffix: [win32, win64, macos]
+        source_branch: [shadowlands]
         include:
           - source_branch: shadowlands
             major_version: 9
-          - source_branch: bfa-dev
-            major_version: 8
+          - package_suffix: win32
+            file_extension: 7z
+          - package_suffix: win64
+            file_extension: 7z
+          - package_suffix: macos
+            file_extension: dmg
 
     steps:
       - name: Install sftp utils
@@ -187,8 +190,8 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.UPLOAD_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'rm simc-${{ matrix.major_version }}*-*-${{ matrix.package_suffix }}-*.7z'
-          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'put ${{ env.local-dir }}/*.7z'
+          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'rm simc-${{ matrix.major_version }}*-*-${{ matrix.package_suffix }}-*.${{ matrix.file_extension }}'
+          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'put ${{ env.local-dir }}/*.${{ matrix.file_extension }}'
 
         env:
           SSHPASS: ${{ secrets.UPLOAD_PASSWORD }}
