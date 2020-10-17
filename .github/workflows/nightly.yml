@@ -49,18 +49,18 @@ jobs:
         env:
           configHeader: engine/config.hpp
         run: |
-          $env:simc_major = grep -E -e "^#define SC_MAJOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MAJOR_VERSION \"([0-9]+)\"/\1/g"
-          $env:simc_minor = grep -E -e "^#define SC_MINOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MINOR_VERSION \"([0-9]+)\"/\1/g"
-          $env:simc_version = $env:simc_major-$env:simc_minor
-          echo "::set-output name=simc_version::$(echo "$env:simc_version")"
-          echo "::set-output name=simc_output_file::$(echo "simc-$env:simc_version-osx-x86.dmg")"
-          echo "::set-output name=simc_nightly_file::$(echo "simc-$env:simc_version-${{ matrix.architecture }}-${{ steps.git_hash.outputs.sha_short }}.dmg")"
+          export SIMC_MAJOR=$(grep -E -e "^#define SC_MAJOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MAJOR_VERSION \"([0-9]+)\"/\1/g")
+          export SIMC_MINOR=$(grep -E -e "^#define SC_MINOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MINOR_VERSION \"([0-9]+)\"/\1/g")
+          export SIMC_VERSION=$SIMC_MAJOR-$SIMC_MINOR
+          echo "::set-output name=simc_version::$(echo "$SIMC_VERSION")"
+          echo "::set-output name=simc_output_file::$(echo "simc-$SIMC_VERSION-osx-x86.dmg")"
+          echo "::set-output name=simc_nightly_file::$(echo "simc-$SIMC_VERSION-${{ matrix.architecture }}-${{ steps.git_hash.outputs.sha_short }}.dmg")"
 
       - name: Build and create a release package
         env:
           SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
         run: |
-          $env:Qt5_DIR/clang_64/bin/qmake LTO=1 simulationcraft.pro
+          $Qt5_DIR/clang_64/bin/qmake LTO=1 simulationcraft.pro
           make -j $(sysctl -n hw.ncpu) create_release
 
       - name: Smoke Test
