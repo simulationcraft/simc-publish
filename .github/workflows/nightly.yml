@@ -21,7 +21,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        source_branch: [shadowlands, bfa-dev]
+        source_branch: [shadowlands]
         include:
           - source_branch: shadowlands
             run_smokeTest: true
@@ -49,8 +49,8 @@ jobs:
         env:
           configHeader: engine/config.hpp
         run: |
-          $env:simc_major = grep -E -e "^#define SC_MAJOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MAJOR_VERSION \"([0-9]+)\"/\1/g")
-          $env:simc_minor = grep -E -e "^#define SC_MINOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MINOR_VERSION \"([0-9]+)\"/\1/g")
+          $env:simc_major = grep -E -e "^#define SC_MAJOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MAJOR_VERSION \"([0-9]+)\"/\1/g"
+          $env:simc_minor = grep -E -e "^#define SC_MINOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MINOR_VERSION \"([0-9]+)\"/\1/g"
           $env:simc_version = $env:simc_major-$env:simc_minor
           echo "::set-output name=simc_version::$(echo "$env:simc_version")"
           echo "::set-output name=simc_output_file::$(echo "simc-$env:simc_version-osx-x86.dmg")"
