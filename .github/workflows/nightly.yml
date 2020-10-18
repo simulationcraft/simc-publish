@@ -53,6 +53,7 @@ jobs:
           echo "::set-output name=simc_version::$(echo "$SIMC_VERSION")"
           echo "::set-output name=simc_output_file::$(echo "simc-$SIMC_VERSION-osx-x86.dmg")"
           echo "::set-output name=simc_nightly_file::$(echo "simc-$SIMC_VERSION-${{ matrix.architecture }}-${{ steps.git_hash.outputs.sha_short }}.dmg")"
+          echo "$SIMC_VERSION" > ./simc-version
 
       - name: Build and create a release package
         env:
@@ -73,7 +74,9 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: simc-nightly-${{ matrix.architecture }}-${{ matrix.source_branch }}
-          path: ${{ steps.simc_info.outputs.simc_nightly_file }}
+          path: |
+            ${{ steps.simc_info.outputs.simc_nightly_file }}
+            ./simc-version
 
   nightly-build-windows:
     name: Windows Nightly ${{ matrix.architecture }} ${{ matrix.source_branch }}
@@ -134,6 +137,7 @@ jobs:
           $env:simc_minor = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}\simc.exe")"
           echo "::set-output name=simc_version::$(echo "$env:simc_major-$env:simc_minor")"
+          echo "${{ steps.simc_info.outputs.simc_version }}" > .\simc-version
 
       - name: Build
         env:
@@ -153,7 +157,9 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
-          path: ${{ env.INSTALL }}\*.7z
+          path: |
+            ${{ env.INSTALL }}\*.7z
+            .\simc-version
 
 
   nightly-upload:
@@ -166,8 +172,6 @@ jobs:
         package_suffix: [win32, win64, macos]
         source_branch: [shadowlands]
         include:
-          - source_branch: shadowlands
-            major_version: 9
           - package_suffix: win32
             file_extension: 7z
           - package_suffix: win64
@@ -188,9 +192,10 @@ jobs:
       # Use specific commit id here to fix known-hosts input not working.
       - name: SFTP Upload
         run: |
+          export SIMCVERSION=$(cat ./simc-version)
           mkdir -p ~/.ssh
           echo "${{ secrets.UPLOAD_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'rm simc-${{ matrix.major_version }}*-*-${{ matrix.package_suffix }}-*.${{ matrix.file_extension }}'
+          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'rm simc-$SIMCVERSION-${{ matrix.package_suffix }}-*.${{ matrix.file_extension }}'
           sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'put ${{ env.local-dir }}/*.${{ matrix.file_extension }}'
 
         env:
