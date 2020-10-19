@@ -192,7 +192,7 @@ jobs:
       # Use specific commit id here to fix known-hosts input not working.
       - name: SFTP Upload
         run: |
-          export SIMCVERSION=$(cat ./simc-version)
+          export SIMCVERSION=$(cat ${{ env.local-dir }}/simc-version)
           mkdir -p ~/.ssh
           echo "${{ secrets.UPLOAD_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'rm simc-$SIMCVERSION-${{ matrix.package_suffix }}-*.${{ matrix.file_extension }}'
