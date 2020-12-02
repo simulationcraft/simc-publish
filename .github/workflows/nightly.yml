@@ -14,6 +14,8 @@ on:
 
 env:
   SIMC_PROFILE: profiles/CI.simc
+  ORG_NAME: simulationcraftorg
+  IMAGE_NAME: simc
 
 jobs:
   nightly-build-macos:
@@ -161,7 +163,6 @@ jobs:
             ${{ env.INSTALL }}\*.7z
             ${{ env.INSTALL }}\simc-version
 
-
   nightly-upload:
     name: Nightly Upload ${{ matrix.source_branch }} ${{ matrix.package_suffix }}
     runs-on: ubuntu-latest
@@ -204,3 +205,51 @@ jobs:
           remote-dir: /
           local-dir: ${{ github.workspace }}/artifacts
 
+  docker-image-create-and-publish:
+    # TODO: this approach could be improved by doing a matrix build like the above jobs do
+    # matrix could be branch and threads
+    # threads could be used for different tagged versions too
+    needs: [nightly-build-windows, nightly-build-macos]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download SimulationCraft
+        run: |
+          git clone --depth 1 --single-branch https://github.com/simulationcraft/simc.git simc
+
+      - name: Get SimulationCraft version
+        run: |
+          echo "SIMC_VERSION=$(grep 'SIMC_WOW_VERSION' engine/dbc/generated/client_data_version.inc | sed -E -e 's/#define SIMC_WOW_VERSION \"(.+)\"/\1/')" >> $GITHUB_ENV
+        working-directory: ./simc
+
+      - name: Get SimulationCraft version
+        run: |
+          echo "SIMC_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        working-directory: ./simc
+
+      - name: Get date
+        run: |
+          echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        working-directory: ./simc
+
+      - name: Create full version string
+        run: |
+          echo "VERSION_STRING=$SIMC_VERSION-$DATE-$SIMC_HASH" >> $GITHUB_ENV
+
+      - name: Build image
+        run: |
+          docker build . --file Dockerfile --tag $IMAGE_NAME:$VERSION_STRING --tag $IMAGE_NAME:latest
+        working-directory: ./simc
+
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKERHUB }}" | docker login -u ${{ secrets.DOCKERHUBUSER }} --password-stdin
+
+      - name: Push image
+        run: |
+          IMAGE_ID=$ORG_NAME/$IMAGE_NAME
+
+          docker tag $IMAGE_NAME:$VERSION_STRING $IMAGE_ID:$VERSION_STRING
+          docker tag $IMAGE_NAME:latest $IMAGE_ID:latest
+
+          docker push $IMAGE_ID:$VERSION_STRING
+          docker push $IMAGE_ID:latest
