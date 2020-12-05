@@ -122,6 +122,7 @@ jobs:
         with:
           modules: qtwebengine
           arch: ${{ matrix.qt_arch }}
+          version: 5.12.9
 
       - name: Create Install and Upload Directory
         run: |
