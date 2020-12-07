@@ -96,11 +96,11 @@ jobs:
           - architecture: x86
             cl_architecture: amd64_x86
             package_suffix: win32
-            qt_arch: win32_msvc2017
+            qt_arch: win32_msvc2019
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
-            qt_arch: win64_msvc2017_64
+            qt_arch: win64_msvc2019_64
 
     steps:
       - uses: actions/checkout@v2
