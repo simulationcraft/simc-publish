@@ -113,7 +113,7 @@ jobs:
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
       - name: Add MSBuild and MS C++ Compiler to path
-        uses: ilammy/msvc-dev-cmd@master
+        uses: ilammy/msvc-dev-cmd@ccb28adcc40700ccb20fd297c87b2732ce02e396
         with:
           arch: ${{ matrix.cl_architecture }}
 
