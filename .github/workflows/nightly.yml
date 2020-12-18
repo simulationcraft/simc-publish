@@ -239,7 +239,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker build . --file Dockerfile --tag $IMAGE_NAME:$VERSION_STRING --tag $IMAGE_NAME:latest
+          docker build . --file Dockerfile --build-arg APIKEY=${{ secrets.SC_DEFAULT_APIKEY }} --tag $IMAGE_NAME:$VERSION_STRING --tag $IMAGE_NAME:latest
         working-directory: ./simc
 
       - name: Log into registry
