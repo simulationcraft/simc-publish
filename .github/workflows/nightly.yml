@@ -23,9 +23,9 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        source_branch: [cpp17]
+        source_branch: [shadowlands]
         include:
-          - source_branch: cpp17
+          - source_branch: shadowlands
             run_smokeTest: true
           - architecture: macos
 
@@ -91,7 +91,7 @@ jobs:
       matrix:
         architecture: [x86, x64]
         targetConfiguration: [Release]
-        source_branch: [cpp17]
+        source_branch: [shadowlands]
         include:
           - source_branch: shadowlands
             run_smokeTest: true
@@ -164,6 +164,47 @@ jobs:
             ${{ env.INSTALL }}\*.7z
             ${{ env.INSTALL }}\simc-version
 
+  nightly-upload:
+    name: Nightly Upload ${{ matrix.source_branch }} ${{ matrix.package_suffix }}
+    runs-on: ubuntu-latest
+    needs: [nightly-build-windows, nightly-build-macos]
+    if: ${{ github.event.inputs.dryRun != 'true' }}
+    strategy:
+      matrix:
+        package_suffix: [win32, win64, macos]
+        source_branch: [shadowlands]
+        include:
+          - package_suffix: win32
+            file_extension: 7z
+          - package_suffix: win64
+            file_extension: 7z
+          - package_suffix: macos
+            file_extension: dmg
+
+    steps:
+      - name: Install sftp utils
+        run: |
+          sudo apt install sshpass
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
+          path: ${{ github.workspace }}/artifacts
+
+      # Use specific commit id here to fix known-hosts input not working.
+      - name: SFTP Upload
+        run: |
+          export SIMCVERSION=$(cat ${{ env.local-dir }}/simc-version | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          mkdir -p ~/.ssh
+          echo "${{ secrets.UPLOAD_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $"rm simc-$SIMCVERSION-${{ matrix.package_suffix }}-*.${{ matrix.file_extension }}"
+          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'put ${{ env.local-dir }}/*.${{ matrix.file_extension }}'
+
+        env:
+          SSHPASS: ${{ secrets.UPLOAD_PASSWORD }}
+          known-hosts: ${{ secrets.UPLOAD_KNOWN_HOSTS }}
+          remote-dir: /
+          local-dir: ${{ github.workspace }}/artifacts
 
   docker-image-create-and-publish:
     # TODO: this approach could be improved by doing a matrix build like the above jobs do
@@ -201,4 +242,15 @@ jobs:
           docker build . --file Dockerfile --build-arg APIKEY=${{ secrets.SC_DEFAULT_APIKEY }} --tag $IMAGE_NAME:$VERSION_STRING --tag $IMAGE_NAME:latest
         working-directory: ./simc
 
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKERHUB }}" | docker login -u ${{ secrets.DOCKERHUBUSER }} --password-stdin
 
+      - name: Push image
+        run: |
+          IMAGE_ID=$ORG_NAME/$IMAGE_NAME
+
+          docker tag $IMAGE_NAME:$VERSION_STRING $IMAGE_ID:$VERSION_STRING
+          docker tag $IMAGE_NAME:latest $IMAGE_ID:latest
+
+          docker push $IMAGE_ID:$VERSION_STRING
+          docker push $IMAGE_ID:latest
