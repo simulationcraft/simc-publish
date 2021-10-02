@@ -102,14 +102,17 @@ jobs:
             cl_architecture: amd64_x86
             package_suffix: win32
             qt_arch: win32_msvc2019
+            qmake_spec: win32-msvc
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
             qt_arch: win64_msvc2019_64
+            qmake_spec: win32-msvc
           - architecture: arm64
             cl_architecture: amd64_arm64
             package_suffix: win-arm64
             qt_arch: win64_msvc2019_arm64
+            qmake_spec: win32-arm64-msvc
           - qt: qt5
             qt_version: 5.15.2
             qt_dir_variable: QT5_DIR
@@ -176,6 +179,7 @@ jobs:
           $env:SZIP = "$env:ProgramFiles\7-Zip"
           $env:GITREV = "${{ steps.git_hash.outputs.sha_short }}"
           $env:PACKAGESUFFIX = "${{ matrix.package_suffix }}_${{ matrix.qt }}"
+          $env:QMAKE_SPEC = "${{ matrix.qmake_spec }}"
           WinReleaseScripts\build-simc.bat ${{ matrix.targetConfiguration }} ${{ matrix.architecture }}
 
       - name: Smoke Test
