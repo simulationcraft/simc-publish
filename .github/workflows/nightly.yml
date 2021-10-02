@@ -106,8 +106,10 @@ jobs:
             qt_arch: win64_msvc2019_64
           - qt: qt5
             qt_version: 5.15.2
+            qt_dir_variable: QT5_DIR
           - qt: qt6
             qt_version: 6.2.0
+            qt_dir_variable: QT6_DIR
 
     steps:
       - uses: actions/checkout@v2
@@ -153,7 +155,7 @@ jobs:
           SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
           SIMCVERSION: ${{ steps.simc_info.outputs.simc_version}}
         run: |
-          $env:QTDIR = "$env:Qt5_DIR"
+          $env:QTDIR = "$env:${{ matrix.qt_dir_variable }}"
           $env:SZIP = "$env:ProgramFiles\7-Zip"
           $env:GITREV = "${{ steps.git_hash.outputs.sha_short }}"
           WinReleaseScripts\build-simc.bat ${{ matrix.targetConfiguration }} ${{ matrix.architecture }}
