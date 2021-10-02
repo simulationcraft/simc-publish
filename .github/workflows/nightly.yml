@@ -92,9 +92,9 @@ jobs:
         architecture: [x86, x64]
         qt: [qt5, qt6]
         targetConfiguration: [Release]
-        source_branch: [shadowlands]
+        source_branch: [qt6]
         include:
-          - source_branch: shadowlands
+          - source_branch: qt6
             run_smokeTest: true
           - architecture: x86
             cl_architecture: amd64_x86
