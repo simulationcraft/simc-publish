@@ -173,10 +173,16 @@ jobs:
           echo "::set-output name=simc_version::$(echo "$env:simc_major-$env:simc_minor")"
           echo "::set-output name=qt_dir::$(echo "$env:${{ matrix.qt_dir_variable }}")"
           echo "$env:simc_major-$env:simc_minor" > ${{ env.INSTALL }}\simc-version
-      
+          
+      - name: print qmake
+        if: ${{ matrix.architecture }} == "arm64"
+        shell: powershell
+        run: |
+          Get-Content ${{ steps.simc_info.outputs.qt_dir}}/bin/qmake.bat
+          
       - name: qmake
         run: |
-          ${{ steps.simc_info.outputs.qt_dir}}\bin\qmake -r -tp vc -spec ${{ matrix.qmake_spec }} -o "${{ env.SIMCDIR }}\simulationcraft.sln" "${{ env.SIMCDIR }}\simulationcraft.pro"
+          ${{ steps.simc_info.outputs.qt_dir}}/bin/qmake -r -tp vc -spec ${{ matrix.qmake_spec }} -o "${{ env.SIMCDIR }}\simulationcraft.sln" "${{ env.SIMCDIR }}\simulationcraft.pro"
           
       - name: msbuild
         run: |
