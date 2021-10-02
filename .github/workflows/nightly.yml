@@ -168,20 +168,42 @@ jobs:
           $env:simc_minor = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}_${{ matrix.qt }}\simc.exe")"
           echo "::set-output name=simc_version::$(echo "$env:simc_major-$env:simc_minor")"
+          echo "::set-output name=qt_dir::$(echo "$env:${{ matrix.qt_dir_variable }}")"
           echo "$env:simc_major-$env:simc_minor" > ${{ env.INSTALL }}\simc-version
-
-      - name: Build
-        env:
-          SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
-          SIMCVERSION: ${{ steps.simc_info.outputs.simc_version}}
+      
+      - name: qmake
         run: |
-          $env:QTDIR = "$env:${{ matrix.qt_dir_variable }}"
-          $env:SZIP = "$env:ProgramFiles\7-Zip"
-          $env:GITREV = "${{ steps.git_hash.outputs.sha_short }}"
-          $env:PACKAGESUFFIX = "${{ matrix.package_suffix }}_${{ matrix.qt }}"
-          $env:QMAKE_SPEC = "${{ matrix.qmake_spec }}"
-          WinReleaseScripts\build-simc.bat ${{ matrix.targetConfiguration }} ${{ matrix.architecture }}
+          ${{ steps.simc_info.outputs.qt_dir}}\bin\qmake -r -tp vc -spec ${{ matrix.qmake_spec }} -o "${{ env.SIMCDIR }}\simulationcraft.sln" "${{ env.SIMCDIR }}\simulationcraft.pro"
+          
+      - name: msbuild
+        run: |
+          msbuild.exe "${{ env.SIMCDIR }}\simulationcraft.sln" /maxcpucount /p:configuration=Release /t:Clean,Build
+          
+      - name: copy base files
+        run: |
+          robocopy ${{ env.SIMCDIR }}\Profiles\ ${{ env.INSTALL }}\profiles\ *.* /S /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}${{ env.INSTALL }}\ README.md COPYING LICENSE LICENSE.BOOST LICENSE.BSD LICENSE.BSD2 LICENSE.MIT LICENSE.LGPL LICENSE.UNLICENSE /NJH /NJS
+          robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ simc.exe /NJH /NJS
+          
 
+      - name: copy gui files
+        if: ${{ matrix.architecture }} != "arm64"
+        run: |
+          robocopy ${{ env.SIMCDIR }}\qt\ ${{ env.INSTALL }}\ Error.html Welcome.html Welcome.png  /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}\locale\ ${{ env.INSTALL }}\locale sc_de.qm sc_cn.qm sc_it.qm sc_ko.qm /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}\winreleasescripts\ ${{ env.INSTALL }}\ qt.conf  /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}\ ${{ env.INSTALL }}\ Simulationcraft.exe  /NJH /NJS
+          
+      - name: deploy qt dependencies
+        if: ${{ matrix.architecture }} != "arm64"
+        run: |
+          ${{ steps.simc_info.outputs.qt_dir}}\bin\windeployqt.exe --force --no-translations --compiler-runtime --release ${{ env.INSTALL }}\Simulationcraft.exe --verbose 2
+          
+
+      - name: compress 7zip package
+        run: |
+          ${{ env.ProgramFiles }}\7-Zip\7z.exe" a -r "${{ env.INSTALL }}\${{ steps.simc_info.outputs.simc_version}}-${{ matrix.package_suffix }}_${{ matrix.qt }}-${{ steps.git_hash.outputs.sha_short }}" "${{ env.INSTALL }}" -mx9 -md=32m
+          
       - name: Smoke Test
         if: ${{ matrix.run_smokeTest }}
         run: |
