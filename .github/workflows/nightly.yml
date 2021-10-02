@@ -100,13 +100,15 @@ jobs:
             run_smokeTest: true
           - architecture: x86
             cl_architecture: amd64_x86
+            package_suffix: win32
+            qt_arch: win32_msvc2019
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
             qt_arch: win64_msvc2019_64
           - architecture: arm64
             cl_architecture: amd64_arm64
-            package_suffix: win32
+            package_suffix: win-arm64
             qt_arch: win64_msvc2019_arm64
           - qt: qt5
             qt_version: 5.15.2
