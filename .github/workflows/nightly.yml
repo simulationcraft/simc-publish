@@ -189,7 +189,7 @@ jobs:
           robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ simc.exe /NJH /NJS
           
       - name: copy gui files
-        if: matrix.architecture != "arm64"
+        if: matrix.architecture != 'arm64'
         run: |
           robocopy ${{ env.SIMCDIR }}\qt\ ${{ env.INSTALL }}\ Error.html Welcome.html Welcome.png  /NJH /NJS
           robocopy ${{ env.SIMCDIR }}\locale\ ${{ env.INSTALL }}\locale sc_de.qm sc_cn.qm sc_it.qm sc_ko.qm /NJH /NJS
@@ -197,7 +197,7 @@ jobs:
           robocopy ${{ env.SIMCDIR }}\ ${{ env.INSTALL }}\ Simulationcraft.exe  /NJH /NJS
           
       - name: deploy qt dependencies
-        if: matrix.architecture != "arm64"
+        if: matrix.architecture != 'arm64'
         run: |
           ${{ steps.simc_info.outputs.qt_dir}}\bin\windeployqt.exe --force --no-translations --compiler-runtime --release ${{ env.INSTALL }}\Simulationcraft.exe --verbose 2
           
