@@ -93,7 +93,6 @@ jobs:
         qt: [qt5, qt6]
         targetConfiguration: [Release]
         source_branch: [qt6]
-        architecture: [""]
         include:
           - source_branch: qt6
             run_smokeTest: true
