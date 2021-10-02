@@ -154,7 +154,7 @@ jobs:
         run: |
           $env:simc_major = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MAJOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           $env:simc_minor = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
-          echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}_{{ matrix.qt }}\simc.exe")"
+          echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}_${{ matrix.qt }}\simc.exe")"
           echo "::set-output name=simc_version::$(echo "$env:simc_major-$env:simc_minor")"
           echo "$env:simc_major-$env:simc_minor" > ${{ env.INSTALL }}\simc-version
 
