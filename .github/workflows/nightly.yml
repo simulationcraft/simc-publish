@@ -113,7 +113,7 @@ jobs:
             qt_dir_variable: QT6_DIR
         exclude:
           - qt: qt6
-            node: x86
+            architecture: x86
 
     steps:
       - uses: actions/checkout@v2
