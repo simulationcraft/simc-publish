@@ -203,7 +203,7 @@ jobs:
       - name: deploy qt dependencies
         if: matrix.architecture != 'arm64'
         run: |
-          ${{ steps.simc_info.outputs.qt_dir}}\bin\windeployqt.exe --force --no-translations --compiler-runtime --release ${{ env.INSTALL }}\Simulationcraft.exe --verbose 2
+          ${{ steps.simc_info.outputs.qt_dir}}\bin\windeployqt.exe --force --no-translations --compiler-runtime --release ${{ steps.simc_info.outputs.install_dir}}\Simulationcraft.exe --verbose 2
           
 
       - name: compress 7zip package
