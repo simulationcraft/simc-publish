@@ -90,10 +90,10 @@ jobs:
     strategy:        
       fail-fast: false
       matrix:
-        architecture: [x86, x64]
         qt: [qt5, qt6]
         targetConfiguration: [Release]
         source_branch: [qt6]
+        architecture: [""]
         include:
           - source_branch: qt6
             run_smokeTest: true
@@ -111,6 +111,12 @@ jobs:
           - qt: qt6
             qt_version: 6.2.0
             qt_dir_variable: QT6_DIR
+          - qt: qt5
+            architecture: x86
+          - qt: qt5
+            architecture: x64
+          - qt: qt6
+            architecture: x64
 
     steps:
       - uses: actions/checkout@v2
