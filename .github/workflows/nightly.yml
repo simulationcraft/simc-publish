@@ -19,11 +19,12 @@ env:
 
 jobs:
   nightly-build-macos:
-    name: MacOS Nightly
+    name: MacOS Nightly ${{ matrix.source_branch }} ${{ matrix.qt }}
     runs-on: macos-latest
     strategy:
       matrix:
         source_branch: [shadowlands]
+        qt: [qt5]
         include:
           - source_branch: shadowlands
             run_smokeTest: true
@@ -75,13 +76,13 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: simc-nightly-${{ matrix.architecture }}-${{ matrix.source_branch }}
+          name: simc-nightly-${{ matrix.architecture }}-${{ matrix.source_branch }}-${{ matrix.qt }}
           path: |
             ${{ steps.simc_info.outputs.simc_nightly_file }}
             ./simc-version
 
   nightly-build-windows:
-    name: Windows Nightly ${{ matrix.architecture }} ${{ matrix.source_branch }}  ${{ matrix.qt }}
+    name: Windows Nightly ${{ matrix.architecture }} ${{ matrix.source_branch }} ${{ matrix.qt }}
     runs-on: windows-latest
     env:
         SIMCDIR: ${{ github.workspace }}
@@ -174,7 +175,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
+          name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}-${{ matrix.qt }}
           path: |
             ${{ env.INSTALL }}\*.7z
             ${{ env.INSTALL }}\simc-version
@@ -188,6 +189,7 @@ jobs:
       matrix:
         package_suffix: [win32, win64, macos]
         source_branch: [shadowlands]
+        qt: [qt5, qt6]
         include:
           - package_suffix: win32
             file_extension: 7z
@@ -195,6 +197,11 @@ jobs:
             file_extension: 7z
           - package_suffix: macos
             file_extension: dmg
+        exclude:
+          - package_suffix: win32
+            qt: qt6
+          - package_suffix: macos
+            qt: qt6
 
     steps:
       - name: Install sftp utils
@@ -203,7 +210,7 @@ jobs:
 
       - uses: actions/download-artifact@v2
         with:
-          name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
+          name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}-${{ matrix.qt }}
           path: ${{ github.workspace }}/artifacts
 
       # Use specific commit id here to fix known-hosts input not working.
