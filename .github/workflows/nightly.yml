@@ -108,9 +108,11 @@ jobs:
           - qt: qt5
             qt_version: 5.15.2
             qt_dir_variable: QT5_DIR
+            qt_modules: qtwebengine
           - qt: qt6
             qt_version: 6.2.0
             qt_dir_variable: QT6_DIR
+            qt_modules: qtwebengine qtwebchannel qtpositioning
         exclude:
           - qt: qt6
             architecture: x86
@@ -133,7 +135,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
-          modules: qtwebengine
+          modules: ${{ matrix.qt_modules }}
           arch: ${{ matrix.qt_arch }}
           setup-python: 'false'
           version: ${{ matrix.qt_version }}
