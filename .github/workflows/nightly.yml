@@ -173,7 +173,7 @@ jobs:
           $env:QTDIR = "$env:${{ matrix.qt_dir_variable }}"
           $env:SZIP = "$env:ProgramFiles\7-Zip"
           $env:GITREV = "${{ steps.git_hash.outputs.sha_short }}"
-          $env:PACKAGESUFFIX = "${{ matrix.package_suffix }}_{{ matrix.qt }}"
+          $env:PACKAGESUFFIX = "${{ matrix.package_suffix }}_${{ matrix.qt }}"
           WinReleaseScripts\build-simc.bat ${{ matrix.targetConfiguration }} ${{ matrix.architecture }}
 
       - name: Smoke Test
