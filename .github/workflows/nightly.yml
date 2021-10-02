@@ -94,18 +94,20 @@ jobs:
         qt: [qt5, qt6]
         targetConfiguration: [Release]
         source_branch: [qt6]
-        architecture: [x86, x64]
+        architecture: [x86, x64, arm64]
         include:
           - source_branch: qt6
             run_smokeTest: true
           - architecture: x86
             cl_architecture: amd64_x86
-            package_suffix: win32
-            qt_arch: win32_msvc2019
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
             qt_arch: win64_msvc2019_64
+          - architecture: arm64
+            cl_architecture: amd64_arm64
+            package_suffix: win32
+            qt_arch: win64_msvc2019_arm64
           - qt: qt5
             qt_version: 5.15.2
             qt_dir_variable: QT5_DIR
@@ -114,9 +116,14 @@ jobs:
             qt_version: 6.2.0
             qt_dir_variable: QT6_DIR
             qt_modules: qtwebengine qtwebchannel qtpositioning
+          - architecture: arm64
+            qt: qt6
+            qt_modules: ""
         exclude:
           - qt: qt6
             architecture: x86
+          - qt: qt5
+            architecture: arm64
 
     steps:
       - uses: actions/checkout@v2
