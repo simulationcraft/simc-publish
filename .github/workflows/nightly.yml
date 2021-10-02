@@ -185,10 +185,13 @@ jobs:
           
       - name: copy base files
         run: |
-          robocopy ${{ env.SIMCDIR }}\Profiles\ ${{ env.INSTALL }}\profiles\ *.* /S /NJH /NJS
-          robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ README.md COPYING LICENSE LICENSE.BOOST LICENSE.BSD LICENSE.BSD2 LICENSE.MIT LICENSE.LGPL LICENSE.UNLICENSE /NJH /NJS
-          robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ simc.exe /NJH /NJS
-          
+          robocopy ${{ env.SIMCDIR }}\Profiles\ ${{ env.INSTALL }}\profiles\ *.* /S
+          robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ README.md COPYING LICENSE LICENSE.BOOST LICENSE.BSD LICENSE.BSD2 LICENSE.MIT LICENSE.LGPL LICENSE.UNLICENSE
+           
+      - name: copy command line
+        run: |
+          robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ simc.exe
+         
       - name: copy gui files
         if: matrix.architecture != 'arm64'
         run: |
