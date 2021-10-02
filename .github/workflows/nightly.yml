@@ -81,7 +81,7 @@ jobs:
             ./simc-version
 
   nightly-build-windows:
-    name: Windows Nightly ${{ matrix.architecture }} ${{ matrix.source_branch }}
+    name: Windows Nightly ${{ matrix.architecture }} ${{ matrix.source_branch }}  ${{ matrix.qt }}
     runs-on: windows-latest
     env:
         SIMCDIR: ${{ github.workspace }}
