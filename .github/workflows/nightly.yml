@@ -87,7 +87,8 @@ jobs:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}\install
         uploadDir: ${{ github.workspace }}\upload
-    strategy:
+    strategy:        
+      fail-fast: false
       matrix:
         architecture: [x86, x64]
         qt: [qt5, qt6]
