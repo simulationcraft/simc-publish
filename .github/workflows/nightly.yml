@@ -173,13 +173,7 @@ jobs:
           echo "::set-output name=simc_version::$(echo "$env:simc_major-$env:simc_minor")"
           echo "::set-output name=qt_dir::$(echo "$env:${{ matrix.qt_dir_variable }}")"
           echo "$env:simc_major-$env:simc_minor" > ${{ env.INSTALL }}\simc-version
-          
-      - name: print qmake
-        if: ${{ matrix.architecture }} == "arm64"
-        shell: powershell
-        run: |
-          Get-Content ${{ steps.simc_info.outputs.qt_dir}}/bin/qmake.bat
-          
+
       - name: qmake
         run: |
           ${{ steps.simc_info.outputs.qt_dir}}/bin/qmake -r -tp vc -spec ${{ matrix.qmake_spec }} -o "${{ env.SIMCDIR }}\simulationcraft.sln" "${{ env.SIMCDIR }}\simulationcraft.pro"
@@ -194,9 +188,8 @@ jobs:
           robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ README.md COPYING LICENSE LICENSE.BOOST LICENSE.BSD LICENSE.BSD2 LICENSE.MIT LICENSE.LGPL LICENSE.UNLICENSE /NJH /NJS
           robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ simc.exe /NJH /NJS
           
-
       - name: copy gui files
-        if: ${{ matrix.architecture }} != "arm64"
+        if: matrix.architecture != "arm64"
         run: |
           robocopy ${{ env.SIMCDIR }}\qt\ ${{ env.INSTALL }}\ Error.html Welcome.html Welcome.png  /NJH /NJS
           robocopy ${{ env.SIMCDIR }}\locale\ ${{ env.INSTALL }}\locale sc_de.qm sc_cn.qm sc_it.qm sc_ko.qm /NJH /NJS
@@ -204,7 +197,7 @@ jobs:
           robocopy ${{ env.SIMCDIR }}\ ${{ env.INSTALL }}\ Simulationcraft.exe  /NJH /NJS
           
       - name: deploy qt dependencies
-        if: ${{ matrix.architecture }} != "arm64"
+        if: matrix.architecture != "arm64"
         run: |
           ${{ steps.simc_info.outputs.qt_dir}}\bin\windeployqt.exe --force --no-translations --compiler-runtime --release ${{ env.INSTALL }}\Simulationcraft.exe --verbose 2
           
