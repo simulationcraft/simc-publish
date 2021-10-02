@@ -90,6 +90,7 @@ jobs:
     strategy:
       matrix:
         architecture: [x86, x64]
+        qt: [qt5, qt6]
         targetConfiguration: [Release]
         source_branch: [shadowlands]
         include:
@@ -103,6 +104,10 @@ jobs:
             cl_architecture: x64
             package_suffix: win64
             qt_arch: win64_msvc2019_64
+          - qt: qt5
+            qt_version: 5.15.2
+          - qt: qt6
+            qt_version: 6.2.0
 
     steps:
       - uses: actions/checkout@v2
@@ -125,6 +130,7 @@ jobs:
           modules: qtwebengine
           arch: ${{ matrix.qt_arch }}
           setup-python: 'false'
+          version: ${{ matrix.qt_version }}
 
       - name: Create Install and Upload Directory
         run: |
