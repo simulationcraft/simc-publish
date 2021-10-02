@@ -103,16 +103,19 @@ jobs:
             package_suffix: win32
             qt_arch: win32_msvc2019
             qmake_spec: win32-msvc
+            msbuild_platform: win32
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
             qt_arch: win64_msvc2019_64
             qmake_spec: win32-msvc
+            msbuild_platform: x64
           - architecture: arm64
             cl_architecture: amd64_arm64
             package_suffix: win-arm64
             qt_arch: win64_msvc2019_arm64
             qmake_spec: win32-arm64-msvc
+            msbuild_platform: arm64
           - qt: qt5
             qt_version: 5.15.2
             qt_dir_variable: QT5_DIR
@@ -177,7 +180,7 @@ jobs:
           
       - name: msbuild
         run: |
-          msbuild.exe "${{ env.SIMCDIR }}\simulationcraft.sln" /maxcpucount /p:configuration=Release /t:Clean,Build
+          msbuild.exe "${{ env.SIMCDIR }}\simulationcraft.sln" /maxcpucount /p:configuration=Release /p:platform=${{ matrix.msbuild_platform }} /t:Clean,Build
           
       - name: copy base files
         run: |
