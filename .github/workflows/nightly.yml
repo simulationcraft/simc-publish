@@ -184,16 +184,19 @@ jobs:
           msbuild.exe "${{ env.SIMCDIR }}\simulationcraft.sln" /maxcpucount /p:configuration=${{ matrix.targetConfiguration }} /p:platform=${{ matrix.msbuild_platform }} /t:Clean,Build
           
       - name: copy base files
+        continue-on-error: true
         run: |
           robocopy ${{ env.SIMCDIR }}\Profiles\ ${{ env.INSTALL }}\profiles\ *.* /S
           robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ README.md COPYING LICENSE LICENSE.BOOST LICENSE.BSD LICENSE.BSD2 LICENSE.MIT LICENSE.LGPL LICENSE.UNLICENSE
            
       - name: copy command line
+        continue-on-error: true
         run: |
           robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ simc.exe
          
       - name: copy gui files
         if: matrix.architecture != 'arm64'
+        continue-on-error: true
         run: |
           robocopy ${{ env.SIMCDIR }}\qt\ ${{ env.INSTALL }}\ Error.html Welcome.html Welcome.png  /NJH /NJS
           robocopy ${{ env.SIMCDIR }}\locale\ ${{ env.INSTALL }}\locale sc_de.qm sc_cn.qm sc_it.qm sc_ko.qm /NJH /NJS
