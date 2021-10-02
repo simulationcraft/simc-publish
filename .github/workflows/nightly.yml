@@ -170,6 +170,7 @@ jobs:
         run: |
           $env:simc_major = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MAJOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           $env:simc_minor = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
+          echo "::set-output name=install_dir::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}_${{ matrix.qt }}")"
           echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}_${{ matrix.qt }}\simc.exe")"
           echo "::set-output name=simc_version::$(echo "$env:simc_major-$env:simc_minor")"
           echo "::set-output name=qt_dir::$(echo "$env:${{ matrix.qt_dir_variable }}")"
@@ -186,22 +187,18 @@ jobs:
       - name: copy base files
         continue-on-error: true
         run: |
-          robocopy ${{ env.SIMCDIR }}\Profiles\ ${{ env.INSTALL }}\profiles\ *.* /S
-          robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ README.md COPYING LICENSE LICENSE.BOOST LICENSE.BSD LICENSE.BSD2 LICENSE.MIT LICENSE.LGPL LICENSE.UNLICENSE
-           
-      - name: copy command line
-        continue-on-error: true
-        run: |
-          robocopy ${{ env.SIMCDIR }} ${{ env.INSTALL }}\ simc.exe
+          robocopy ${{ env.SIMCDIR }}\Profiles\ ${{ steps.simc_info.outputs.install_dir}}\profiles\ *.* /S
+          robocopy ${{ env.SIMCDIR }} ${{ steps.simc_info.outputs.install_dir}}\ README.md COPYING LICENSE LICENSE.BOOST LICENSE.BSD LICENSE.BSD2 LICENSE.MIT LICENSE.LGPL LICENSE.UNLICENSE
+          robocopy ${{ env.SIMCDIR }} ${{ steps.simc_info.outputs.install_dir}}\ simc.exe
          
       - name: copy gui files
         if: matrix.architecture != 'arm64'
         continue-on-error: true
         run: |
-          robocopy ${{ env.SIMCDIR }}\qt\ ${{ env.INSTALL }}\ Error.html Welcome.html Welcome.png  /NJH /NJS
-          robocopy ${{ env.SIMCDIR }}\locale\ ${{ env.INSTALL }}\locale sc_de.qm sc_cn.qm sc_it.qm sc_ko.qm /NJH /NJS
-          robocopy ${{ env.SIMCDIR }}\winreleasescripts\ ${{ env.INSTALL }}\ qt.conf  /NJH /NJS
-          robocopy ${{ env.SIMCDIR }}\ ${{ env.INSTALL }}\ Simulationcraft.exe  /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}\qt\ ${{ steps.simc_info.outputs.install_dir}}\ Error.html Welcome.html Welcome.png  /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}\locale\ ${{ steps.simc_info.outputs.install_dir}}\locale sc_de.qm sc_cn.qm sc_it.qm sc_ko.qm /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}\winreleasescripts\ ${{ steps.simc_info.outputs.install_dir}}\ qt.conf  /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}\ ${{ steps.simc_info.outputs.install_dir}}\ Simulationcraft.exe  /NJH /NJS
           
       - name: deploy qt dependencies
         if: matrix.architecture != 'arm64'
@@ -211,7 +208,7 @@ jobs:
 
       - name: compress 7zip package
         run: |
-          & "$env:ProgramFiles\7-Zip\7z.exe" a -r "${{ env.INSTALL }}\${{ steps.simc_info.outputs.simc_version}}-${{ matrix.package_suffix }}_${{ matrix.qt }}-${{ steps.git_hash.outputs.sha_short }}" "${{ env.INSTALL }}" -mx9 -md=32m
+          & "$env:ProgramFiles\7-Zip\7z.exe" a -r "${{ env.INSTALL }}\${{ steps.simc_info.outputs.simc_version}}-${{ matrix.package_suffix }}_${{ matrix.qt }}-${{ steps.git_hash.outputs.sha_short }}" "${{ steps.simc_info.outputs.install_dir}}" -mx9 -md=32m
           
       - name: Smoke Test
         if: ${{ matrix.run_smokeTest }}
