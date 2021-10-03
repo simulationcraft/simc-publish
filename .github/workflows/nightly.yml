@@ -23,7 +23,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        source_branch: [shadowlands]
+        source_branch: [qt6]
         qt: [qt5]
         include:
           - source_branch: shadowlands
