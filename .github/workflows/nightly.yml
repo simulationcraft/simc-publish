@@ -63,7 +63,7 @@ jobs:
         env:
           SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
         run: |
-          $Qt6_DIR/bin/qmake LTO=1 simulationcraft.pro
+          $Qt6_DIR/bin/qmake LTO=1 simulationcraft.pro QMAKE_APPLE_DEVICE_ARCHS="x86_64 arm64"
           make -j $(sysctl -n hw.ncpu) create_release
 
       - name: Smoke Test
