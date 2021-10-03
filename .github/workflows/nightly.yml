@@ -122,10 +122,12 @@ jobs:
             qt_version: 5.15.2
             qt_dir_variable: QT5_DIR
             qt_modules: qtwebengine
+            qt_package_suffix: "_qt5"
           - qt: qt6
             qt_version: 6.2.0
             qt_dir_variable: QT6_DIR
             qt_modules: qtwebengine qtwebchannel qtpositioning
+            qt_package_suffix: ""
           - architecture: arm64
             qt: qt6
             qt_modules: ""
@@ -171,8 +173,8 @@ jobs:
         run: |
           $env:simc_major = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MAJOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           $env:simc_minor = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
-          echo "::set-output name=install_dir::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}_${{ matrix.qt }}")"
-          echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}_${{ matrix.qt }}\simc.exe")"
+          echo "::set-output name=install_dir::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}")"
+          echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}\simc.exe")"
           echo "::set-output name=simc_version::$(echo "$env:simc_major-$env:simc_minor")"
           echo "::set-output name=qt_dir::$(echo "$env:${{ matrix.qt_dir_variable }}")"
           echo "$env:simc_major-$env:simc_minor" > ${{ env.INSTALL }}\simc-version
@@ -209,7 +211,7 @@ jobs:
 
       - name: compress 7zip package
         run: |
-          & "$env:ProgramFiles\7-Zip\7z.exe" a -r "${{ env.INSTALL }}\${{ steps.simc_info.outputs.simc_version}}-${{ matrix.package_suffix }}_${{ matrix.qt }}-${{ steps.git_hash.outputs.sha_short }}" "${{ steps.simc_info.outputs.install_dir}}" -mx9 -md=32m
+          & "$env:ProgramFiles\7-Zip\7z.exe" a -r "${{ env.INSTALL }}\${{ steps.simc_info.outputs.simc_version}}-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}-${{ steps.git_hash.outputs.sha_short }}" "${{ steps.simc_info.outputs.install_dir}}" -mx9 -md=32m
           
       - name: Smoke Test
         if: ${{ matrix.run_smokeTest }}
