@@ -211,7 +211,7 @@ jobs:
 
       - name: compress 7zip package
         run: |
-          & "$env:ProgramFiles\7-Zip\7z.exe" a -r "${{ env.INSTALL }}\${{ steps.simc_info.outputs.simc_version}}-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}-${{ steps.git_hash.outputs.sha_short }}" "${{ steps.simc_info.outputs.install_dir}}" -mx9 -md=32m
+          & "$env:ProgramFiles\7-Zip\7z.exe" a -r "${{ env.INSTALL }}\simc-${{ steps.simc_info.outputs.simc_version}}-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}-${{ steps.git_hash.outputs.sha_short }}" "${{ steps.simc_info.outputs.install_dir}}" -mx9 -md=32m
           
       - name: Smoke Test
         if: ${{ matrix.run_smokeTest }}
