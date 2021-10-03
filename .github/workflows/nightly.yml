@@ -220,7 +220,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}-${{ matrix.qt }}
+          name: simc-nightly-${{ matrix.qt_package_suffix }}-${{ matrix.source_branch }}-${{ matrix.qt }}
           path: |
             ${{ env.INSTALL }}\*.7z
             ${{ env.INSTALL }}\simc-version
