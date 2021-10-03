@@ -19,7 +19,7 @@ env:
 
 jobs:
   nightly-build-macos:
-    name: MacOS Nightly ${{ matrix.source_branch }} ${{ matrix.qt }}
+    name: MacOS Nightly ${{ matrix.source_branch }}
     runs-on: macos-latest
     strategy:
       matrix:
@@ -76,7 +76,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: simc-nightly-${{ matrix.architecture }}-${{ matrix.source_branch }}-${{ matrix.qt }}
+          name: simc-nightly-${{ matrix.architecture }}-${{ matrix.source_branch }}
           path: |
             ${{ steps.simc_info.outputs.simc_nightly_file }}
             ./simc-version
@@ -220,7 +220,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: simc-nightly-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}-${{ matrix.source_branch }}-${{ matrix.qt }}
+          name: simc-nightly-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}-${{ matrix.source_branch }}
           path: |
             ${{ env.INSTALL }}\*.7z
             ${{ env.INSTALL }}\simc-version
@@ -234,7 +234,6 @@ jobs:
       matrix:
         package_suffix: [win32_qt5, win64_qt5, win64, win-arm64, macos]
         source_branch: [shadowlands]
-        qt: [qt5, qt6]
         include:
           - package_suffix: win32_qt5
             file_extension: 7z
@@ -259,7 +258,7 @@ jobs:
 
       - uses: actions/download-artifact@v2
         with:
-          name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}-${{ matrix.qt }}
+          name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
           path: ${{ github.workspace }}/artifacts
 
       # Use specific commit id here to fix known-hosts input not working.
