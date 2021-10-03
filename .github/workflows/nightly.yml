@@ -96,7 +96,7 @@ jobs:
         source_branch: [shadowlands]
         architecture: [x86, x64, arm64]
         include:
-          - source_branch: qt6
+          - source_branch: shadowlands
             run_smokeTest: true
           - architecture: x86
             cl_architecture: amd64_x86
