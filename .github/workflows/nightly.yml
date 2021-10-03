@@ -245,11 +245,6 @@ jobs:
             file_extension: 7z
           - package_suffix: macos
             file_extension: dmg
-        exclude:
-          - package_suffix: win32
-            qt: qt6
-          - package_suffix: macos
-            qt: qt6
 
     steps:
       - name: Install sftp utils
