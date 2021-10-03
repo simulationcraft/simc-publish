@@ -24,7 +24,6 @@ jobs:
     strategy:
       matrix:
         source_branch: [shadowlands]
-        qt: [qt5]
         include:
           - source_branch: shadowlands
             run_smokeTest: true
@@ -40,6 +39,8 @@ jobs:
         uses: jurplel/install-qt-action@v2
         with:
           modules: qtwebengine
+          version: 6.2.0
+          aqtversion: '==2.0.0'
 
       - name: Get git hash
         id: git_hash
@@ -62,7 +63,7 @@ jobs:
         env:
           SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
         run: |
-          $Qt5_DIR/bin/qmake LTO=1 simulationcraft.pro
+          $Qt6_DIR/bin/qmake LTO=1 simulationcraft.pro
           make -j $(sysctl -n hw.ncpu) create_release
 
       - name: Smoke Test
