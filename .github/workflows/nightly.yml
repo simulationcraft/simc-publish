@@ -38,7 +38,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
-          modules: qtwebengine
+          modules: qtwebengine qtwebchannel qtpositioning
           version: 6.2.0
           aqtversion: '==2.0.0'
 
