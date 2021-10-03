@@ -117,6 +117,7 @@ jobs:
             qt_arch: win64_msvc2019_64
             qmake_spec: win32-arm64-msvc
             msbuild_platform: arm64
+            run_smokeTest: false
           - qt: qt5
             qt_version: 5.15.2
             qt_dir_variable: QT5_DIR
