@@ -19,11 +19,12 @@ env:
 
 jobs:
   nightly-build-macos:
-    name: MacOS Nightly
+    name: MacOS Nightly ${{ matrix.source_branch }}
     runs-on: macos-latest
     strategy:
       matrix:
         source_branch: [shadowlands]
+        qt: [qt5]
         include:
           - source_branch: shadowlands
             run_smokeTest: true
@@ -81,17 +82,19 @@ jobs:
             ./simc-version
 
   nightly-build-windows:
-    name: Windows Nightly ${{ matrix.architecture }} ${{ matrix.source_branch }}
+    name: Windows Nightly ${{ matrix.architecture }} ${{ matrix.source_branch }} ${{ matrix.qt }}
     runs-on: windows-latest
     env:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}\install
         uploadDir: ${{ github.workspace }}\upload
-    strategy:
+    strategy:        
+      fail-fast: false
       matrix:
-        architecture: [x86, x64]
+        qt: [qt5, qt6]
         targetConfiguration: [Release]
         source_branch: [shadowlands]
+        architecture: [x86, x64, arm64]
         include:
           - source_branch: shadowlands
             run_smokeTest: true
@@ -99,10 +102,40 @@ jobs:
             cl_architecture: amd64_x86
             package_suffix: win32
             qt_arch: win32_msvc2019
+            qmake_spec: win32-msvc
+            msbuild_platform: win32
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
             qt_arch: win64_msvc2019_64
+            qmake_spec: win32-msvc
+            msbuild_platform: x64
+          - architecture: arm64
+            cl_architecture: amd64_arm64
+            package_suffix: win-arm64
+            # Use x64 qt installation for arm, since we can currently build cli only anyway, and require host qmake. If we ever want to fully build the GUI, we need to somehow get both win64_msvc2019_arm64 Qt as well as win64_msvc2019_64 for qmake set up. jurplel/install-qt-actio does not set up the qmake.bat from the arm64 install to correctly point to the x64 qmake.exe, and maybe does not even install it at all.
+            qt_arch: win64_msvc2019_64
+            qmake_spec: win32-arm64-msvc
+            msbuild_platform: arm64
+            run_smokeTest: false
+          - qt: qt5
+            qt_version: 5.15.2
+            qt_dir_variable: QT5_DIR
+            qt_modules: qtwebengine
+            qt_package_suffix: "_qt5"
+          - qt: qt6
+            qt_version: 6.2.0
+            qt_dir_variable: QT6_DIR
+            qt_modules: qtwebengine qtwebchannel qtpositioning
+            qt_package_suffix: ""
+          - architecture: arm64
+            qt: qt6
+            qt_modules: ""
+        exclude:
+          - qt: qt6
+            architecture: x86
+          - qt: qt5
+            architecture: arm64
 
     steps:
       - uses: actions/checkout@v2
@@ -122,9 +155,11 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
-          modules: qtwebengine
+          modules: ${{ matrix.qt_modules }}
           arch: ${{ matrix.qt_arch }}
           setup-python: 'false'
+          version: ${{ matrix.qt_version }}
+          aqtversion: '==2.0.0'
 
       - name: Create Install and Upload Directory
         run: |
@@ -138,20 +173,46 @@ jobs:
         run: |
           $env:simc_major = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MAJOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           $env:simc_minor = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
-          echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}\simc.exe")"
+          echo "::set-output name=install_dir::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}")"
+          echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}\simc.exe")"
           echo "::set-output name=simc_version::$(echo "$env:simc_major-$env:simc_minor")"
+          echo "::set-output name=qt_dir::$(echo "$env:${{ matrix.qt_dir_variable }}")"
           echo "$env:simc_major-$env:simc_minor" > ${{ env.INSTALL }}\simc-version
 
-      - name: Build
-        env:
-          SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
-          SIMCVERSION: ${{ steps.simc_info.outputs.simc_version}}
+      - name: qmake
         run: |
-          $env:QTDIR = "$env:Qt5_DIR"
-          $env:SZIP = "$env:ProgramFiles\7-Zip"
-          $env:GITREV = "${{ steps.git_hash.outputs.sha_short }}"
-          WinReleaseScripts\build-simc.bat ${{ matrix.targetConfiguration }} ${{ matrix.architecture }}
+          ${{ steps.simc_info.outputs.qt_dir}}/bin/qmake -r -tp vc -spec ${{ matrix.qmake_spec }} -o "${{ env.SIMCDIR }}\simulationcraft.sln" "${{ env.SIMCDIR }}\simulationcraft.pro"
+          
+      - name: msbuild
+        run: |
+          msbuild.exe "${{ env.SIMCDIR }}\simulationcraft.sln" /maxcpucount /p:configuration=${{ matrix.targetConfiguration }} /p:platform=${{ matrix.msbuild_platform }} /t:Clean,Build
+          
+      - name: copy base files
+        continue-on-error: true
+        run: |
+          robocopy ${{ env.SIMCDIR }}\Profiles\ ${{ steps.simc_info.outputs.install_dir}}\profiles\ *.* /S
+          robocopy ${{ env.SIMCDIR }} ${{ steps.simc_info.outputs.install_dir}}\ README.md COPYING LICENSE LICENSE.BOOST LICENSE.BSD LICENSE.BSD2 LICENSE.MIT LICENSE.LGPL LICENSE.UNLICENSE
+          robocopy ${{ env.SIMCDIR }} ${{ steps.simc_info.outputs.install_dir}}\ simc.exe
+         
+      - name: copy gui files
+        if: matrix.architecture != 'arm64'
+        continue-on-error: true
+        run: |
+          robocopy ${{ env.SIMCDIR }}\qt\ ${{ steps.simc_info.outputs.install_dir}}\ Error.html Welcome.html Welcome.png  /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}\locale\ ${{ steps.simc_info.outputs.install_dir}}\locale sc_de.qm sc_cn.qm sc_it.qm sc_ko.qm /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}\winreleasescripts\ ${{ steps.simc_info.outputs.install_dir}}\ qt.conf  /NJH /NJS
+          robocopy ${{ env.SIMCDIR }}\ ${{ steps.simc_info.outputs.install_dir}}\ Simulationcraft.exe  /NJH /NJS
+          
+      - name: deploy qt dependencies
+        if: matrix.architecture != 'arm64'
+        run: |
+          ${{ steps.simc_info.outputs.qt_dir}}\bin\windeployqt.exe --force --no-translations --compiler-runtime --release ${{ steps.simc_info.outputs.install_dir}}\Simulationcraft.exe --verbose 2
+          
 
+      - name: compress 7zip package
+        run: |
+          & "$env:ProgramFiles\7-Zip\7z.exe" a -r "${{ env.INSTALL }}\simc-${{ steps.simc_info.outputs.simc_version}}-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}-${{ steps.git_hash.outputs.sha_short }}" "${{ steps.simc_info.outputs.install_dir}}" -mx9 -md=32m
+          
       - name: Smoke Test
         if: ${{ matrix.run_smokeTest }}
         run: |
@@ -159,7 +220,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
+          name: simc-nightly-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}-${{ matrix.source_branch }}
           path: |
             ${{ env.INSTALL }}\*.7z
             ${{ env.INSTALL }}\simc-version
@@ -171,12 +232,16 @@ jobs:
     if: ${{ github.event.inputs.dryRun != 'true' }}
     strategy:
       matrix:
-        package_suffix: [win32, win64, macos]
+        package_suffix: [win32_qt5, win64_qt5, win64, win-arm64, macos]
         source_branch: [shadowlands]
         include:
-          - package_suffix: win32
+          - package_suffix: win32_qt5
+            file_extension: 7z
+          - package_suffix: win64_qt5
             file_extension: 7z
           - package_suffix: win64
+            file_extension: 7z
+          - package_suffix: win-arm64
             file_extension: 7z
           - package_suffix: macos
             file_extension: dmg
