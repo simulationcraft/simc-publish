@@ -113,7 +113,7 @@ jobs:
             msbuild_platform: x64
           - architecture: arm64
             cl_architecture: amd64_arm64
-            package_suffix: win-arm64
+            package_suffix: winarm64
             # Use x64 qt installation for arm, since we can currently build cli only anyway, and require host qmake. If we ever want to fully build the GUI, we need to somehow get both win64_msvc2019_arm64 Qt as well as win64_msvc2019_64 for qmake set up. jurplel/install-qt-actio does not set up the qmake.bat from the arm64 install to correctly point to the x64 qmake.exe, and maybe does not even install it at all.
             qt_arch: win64_msvc2019_64
             qmake_spec: win32-arm64-msvc
@@ -233,7 +233,7 @@ jobs:
     if: ${{ github.event.inputs.dryRun != 'true' }}
     strategy:
       matrix:
-        package_suffix: [win32_qt5, win64_qt5, win64, win-arm64, macos]
+        package_suffix: [win32_qt5, win64_qt5, win64, winarm64, macos]
         source_branch: [shadowlands]
         include:
           - package_suffix: win32_qt5
@@ -242,7 +242,7 @@ jobs:
             file_extension: 7z
           - package_suffix: win64
             file_extension: 7z
-          - package_suffix: win-arm64
+          - package_suffix: winarm64
             file_extension: 7z
           - package_suffix: macos
             file_extension: dmg
