@@ -88,6 +88,7 @@ jobs:
     env:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}\install
+        CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
         uploadDir: ${{ github.workspace }}\upload
     strategy:        
       fail-fast: false
