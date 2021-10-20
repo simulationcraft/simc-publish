@@ -105,21 +105,15 @@ jobs:
             cl_architecture: amd64_x86
             package_suffix: win32
             qt_arch: win32_msvc2019
-            qmake_spec: win32-msvc
-            msbuild_platform: win32
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
             qt_arch: win64_msvc2019_64
-            qmake_spec: win32-msvc
-            msbuild_platform: x64
           - architecture: arm64
             cl_architecture: amd64_arm64
             package_suffix: winarm64
             # Use x64 qt installation for arm, since we can currently build cli only anyway, and require host qmake. If we ever want to fully build the GUI, we need to somehow get both win64_msvc2019_arm64 Qt as well as win64_msvc2019_64 for qmake set up. jurplel/install-qt-actio does not set up the qmake.bat from the arm64 install to correctly point to the x64 qmake.exe, and maybe does not even install it at all.
             qt_arch: win64_msvc2019_64
-            qmake_spec: win32-arm64-msvc
-            msbuild_platform: arm64
             run_smokeTest: false
             buildGui: OFF
           - qt: qt5
@@ -188,7 +182,7 @@ jobs:
 
       - name: Generate project files
         run: |
-          cmake -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja -DBUILD_GUI=${{ matrix.buildGui }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${{ env.INSTALL }}
+          cmake -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja -DBUILD_GUI=${{ matrix.buildGui }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${{ steps.simc_info.outputs.install_dir}}
           
       - name: Build
         run: |
