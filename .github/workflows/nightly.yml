@@ -88,6 +88,7 @@ jobs:
     env:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}\install
+        CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
         uploadDir: ${{ github.workspace }}\upload
     strategy:        
       fail-fast: false
@@ -99,26 +100,22 @@ jobs:
         include:
           - source_branch: shadowlands
             run_smokeTest: true
+            buildGui: ON
           - architecture: x86
             cl_architecture: amd64_x86
             package_suffix: win32
             qt_arch: win32_msvc2019
-            qmake_spec: win32-msvc
-            msbuild_platform: win32
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
             qt_arch: win64_msvc2019_64
-            qmake_spec: win32-msvc
-            msbuild_platform: x64
           - architecture: arm64
             cl_architecture: amd64_arm64
             package_suffix: winarm64
             # Use x64 qt installation for arm, since we can currently build cli only anyway, and require host qmake. If we ever want to fully build the GUI, we need to somehow get both win64_msvc2019_arm64 Qt as well as win64_msvc2019_64 for qmake set up. jurplel/install-qt-actio does not set up the qmake.bat from the arm64 install to correctly point to the x64 qmake.exe, and maybe does not even install it at all.
             qt_arch: win64_msvc2019_64
-            qmake_spec: win32-arm64-msvc
-            msbuild_platform: arm64
             run_smokeTest: false
+            buildGui: OFF
           - qt: qt5
             qt_version: 5.15.2
             qt_dir_variable: QT5_DIR
@@ -147,7 +144,10 @@ jobs:
       - name: Get git hash
         id: git_hash
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-
+        
+      - name: Get cmake
+        uses: lukka/get-cmake@latest
+       
       - name: Add MSBuild and MS C++ Compiler to path
         uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -180,32 +180,16 @@ jobs:
           echo "::set-output name=qt_dir::$(echo "$env:${{ matrix.qt_dir_variable }}")"
           echo "$env:simc_major-$env:simc_minor" > ${{ env.INSTALL }}\simc-version
 
-      - name: qmake
+      - name: Generate project files
         run: |
-          ${{ steps.simc_info.outputs.qt_dir}}/bin/qmake -r -tp vc -spec ${{ matrix.qmake_spec }} -o "${{ env.SIMCDIR }}\simulationcraft.sln" "${{ env.SIMCDIR }}\simulationcraft.pro"
+          cmake -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja -DBUILD_GUI=${{ matrix.buildGui }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${{ steps.simc_info.outputs.install_dir}}
           
-      - name: msbuild
+      - name: Build
         run: |
-          msbuild.exe "${{ env.SIMCDIR }}\simulationcraft.sln" /maxcpucount /p:configuration=${{ matrix.targetConfiguration }} /p:platform=${{ matrix.msbuild_platform }} /t:Clean,Build
-          
-      - name: copy base files
-        continue-on-error: true
-        run: |
-          robocopy ${{ env.SIMCDIR }}\Profiles\ ${{ steps.simc_info.outputs.install_dir}}\profiles\ *.* /S
-          robocopy ${{ env.SIMCDIR }} ${{ steps.simc_info.outputs.install_dir}}\ README.md COPYING LICENSE LICENSE.BOOST LICENSE.BSD LICENSE.BSD2 LICENSE.MIT LICENSE.LGPL LICENSE.UNLICENSE
-          robocopy ${{ env.SIMCDIR }} ${{ steps.simc_info.outputs.install_dir}}\ simc.exe
-         
-      - name: copy gui files
-        if: matrix.architecture != 'arm64'
-        continue-on-error: true
-        run: |
-          robocopy ${{ env.SIMCDIR }}\qt\ ${{ steps.simc_info.outputs.install_dir}}\ Error.html Welcome.html Welcome.png  /NJH /NJS
-          robocopy ${{ env.SIMCDIR }}\locale\ ${{ steps.simc_info.outputs.install_dir}}\locale sc_de.qm sc_cn.qm sc_it.qm sc_ko.qm /NJH /NJS
-          robocopy ${{ env.SIMCDIR }}\winreleasescripts\ ${{ steps.simc_info.outputs.install_dir}}\ qt.conf  /NJH /NJS
-          robocopy ${{ env.SIMCDIR }}\ ${{ steps.simc_info.outputs.install_dir}}\ Simulationcraft.exe  /NJH /NJS
-          
+          cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target install
+
       - name: deploy qt dependencies
-        if: matrix.architecture != 'arm64'
+        if: matrix.buildGui == 'ON'
         run: |
           ${{ steps.simc_info.outputs.qt_dir}}\bin\windeployqt.exe --force --no-translations --compiler-runtime --release ${{ steps.simc_info.outputs.install_dir}}\Simulationcraft.exe --verbose 2
           
