@@ -93,18 +93,14 @@ jobs:
     strategy:        
       fail-fast: false
       matrix:
-        qt: [qt5, qt6]
+        qt: [qt6]
         targetConfiguration: [Release]
         source_branch: [shadowlands]
-        architecture: [x86, x64, arm64]
+        architecture: [x64, arm64]
         include:
           - source_branch: shadowlands
             run_smokeTest: true
             buildGui: ON
-          - architecture: x86
-            cl_architecture: amd64_x86
-            package_suffix: win32
-            qt_arch: win32_msvc2019
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
@@ -116,10 +112,6 @@ jobs:
             qt_arch: win64_msvc2019_64
             run_smokeTest: false
             buildGui: OFF
-          - qt: qt5
-            qt_version: 5.15.2
-            qt_dir_variable: QT5_DIR
-            qt_modules: qtwebengine
             qt_package_suffix: "_qt5"
           - qt: qt6
             qt_version: 6.2.0
@@ -129,11 +121,6 @@ jobs:
           - architecture: arm64
             qt: qt6
             qt_modules: ""
-        exclude:
-          - qt: qt6
-            architecture: x86
-          - qt: qt5
-            architecture: arm64
 
     steps:
       - uses: actions/checkout@v2
