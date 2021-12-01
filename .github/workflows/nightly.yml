@@ -206,13 +206,9 @@ jobs:
     if: ${{ github.event.inputs.dryRun != 'true' }}
     strategy:
       matrix:
-        package_suffix: [win32_qt5, win64_qt5, win64, winarm64, macos]
+        package_suffix: [win64, winarm64, macos]
         source_branch: [shadowlands]
         include:
-          - package_suffix: win32_qt5
-            file_extension: 7z
-          - package_suffix: win64_qt5
-            file_extension: 7z
           - package_suffix: win64
             file_extension: 7z
           - package_suffix: winarm64
