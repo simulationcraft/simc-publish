@@ -41,7 +41,8 @@ jobs:
           modules: qtwebengine qtwebchannel qtpositioning
           version: 6.2.0
           aqtversion: '==2.0.0'
-
+          setup-python: 'false'
+          
       - name: Get git hash
         id: git_hash
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
