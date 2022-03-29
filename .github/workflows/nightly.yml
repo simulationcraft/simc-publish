@@ -108,7 +108,7 @@ jobs:
             package_suffix: win64
             qt_arch: win64_msvc2019_64
             smokeTest: true
-            buildGui: OFF
+            buildGui: ON
           - architecture: arm64
             cl_architecture: amd64_arm64
             package_suffix: winarm64
