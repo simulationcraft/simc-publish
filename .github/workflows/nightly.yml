@@ -88,39 +88,34 @@ jobs:
     runs-on: windows-latest
     env:
         SIMCDIR: ${{ github.workspace }}
-        INSTALL: ${{ github.workspace }}\install
+        INSTALL: ${{ github.workspace }}/install
         CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
-        uploadDir: ${{ github.workspace }}\upload
+        uploadDir: ${{ github.workspace }}/upload
     strategy:        
       fail-fast: false
       matrix:
         qt: [qt6]
         targetConfiguration: [Release]
-        source_branch: [shadowlands]
+        source_branch: [cpack]
         architecture: [x64, arm64]
         include:
-          - source_branch: shadowlands
-            run_smokeTest: true
-            buildGui: ON
+          - qt: qt6
+            qt_version: 6.2.4
+            qt_dir_variable: QT6_DIR
+            qt_modules: qtwebengine qtwebchannel qtpositioning
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
             qt_arch: win64_msvc2019_64
+            smokeTest: true
+            buildGui: OFF
           - architecture: arm64
             cl_architecture: amd64_arm64
             package_suffix: winarm64
             # Use x64 qt installation for arm, since we can currently build cli only anyway, and require host qmake. If we ever want to fully build the GUI, we need to somehow get both win64_msvc2019_arm64 Qt as well as win64_msvc2019_64 for qmake set up. jurplel/install-qt-actio does not set up the qmake.bat from the arm64 install to correctly point to the x64 qmake.exe, and maybe does not even install it at all.
             qt_arch: win64_msvc2019_64
-            run_smokeTest: false
+            smokeTest: false
             buildGui: OFF
-            qt_package_suffix: "_qt5"
-          - qt: qt6
-            qt_version: 6.2.0
-            qt_dir_variable: QT6_DIR
-            qt_modules: qtwebengine qtwebchannel qtpositioning
-            qt_package_suffix: ""
-          - architecture: arm64
-            qt: qt6
             qt_modules: ""
 
     steps:
@@ -155,50 +150,28 @@ jobs:
           mkdir ${{ env.INSTALL }}
           mkdir ${{ env.uploadDir }}
 
-      - name: Extract Simc Version info
-        id: simc_info
-        env:
-          configHeader: engine/config.hpp
-        run: |
-          $env:simc_major = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MAJOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
-          $env:simc_minor = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
-          echo "::set-output name=install_dir::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}")"
-          echo "::set-output name=cli_executable::$(echo "${{ env.INSTALL }}\simc-$env:simc_major-$env:simc_minor-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}\simc.exe")"
-          echo "::set-output name=simc_version::$(echo "$env:simc_major-$env:simc_minor")"
-          echo "::set-output name=qt_dir::$(echo "$env:${{ matrix.qt_dir_variable }}")"
-          echo "$env:simc_major-$env:simc_minor" > ${{ env.INSTALL }}\simc-version
-
       - name: Generate project files
         run: |
           cmake -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja -DBUILD_GUI=${{ matrix.buildGui }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${{ steps.simc_info.outputs.install_dir}} -DSC_DEFAULT_APIKEY=${{ secrets.SC_DEFAULT_APIKEY }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=1
           
       - name: Build
-        env:
-          SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
         run: |
-          cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target install
+          cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target all
 
-      - name: deploy qt dependencies
-        if: matrix.buildGui == 'ON'
-        run: |
-          ${{ steps.simc_info.outputs.qt_dir}}\bin\windeployqt.exe --force --no-translations --no-compiler-runtime --release ${{ steps.simc_info.outputs.install_dir}}\Simulationcraft.exe --verbose 2
-          
-
-      - name: compress 7zip package
-        run: |
-          & "$env:ProgramFiles\7-Zip\7z.exe" a -r "${{ env.INSTALL }}\simc-${{ steps.simc_info.outputs.simc_version}}-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}-${{ steps.git_hash.outputs.sha_short }}" "${{ steps.simc_info.outputs.install_dir}}" -mx9 -md=32m
-          
       - name: Smoke Test
-        if: ${{ matrix.run_smokeTest }}
+        if: ${{ matrix.smokeTest }}
         run: |
-          & "${{ steps.simc_info.outputs.cli_executable}}" ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
+          & "${{ env.CMAKE_BUILD_DIR }}/simc.exe" ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
+          
+      - name: Package
+        run: |
+          cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target package
 
       - uses: actions/upload-artifact@v2
         with:
-          name: simc-nightly-${{ matrix.package_suffix }}${{ matrix.qt_package_suffix }}-${{ matrix.source_branch }}
+          name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
           path: |
-            ${{ env.INSTALL }}\*.7z
-            ${{ env.INSTALL }}\simc-version
+            ${{ env.CMAKE_BUILD_DIR }}/*.7z
 
   nightly-upload:
     name: Nightly Upload ${{ matrix.source_branch }} ${{ matrix.package_suffix }}
