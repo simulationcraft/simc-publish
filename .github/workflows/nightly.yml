@@ -96,7 +96,7 @@ jobs:
       matrix:
         qt: [qt6]
         targetConfiguration: [Release]
-        source_branch: [cpack]
+        source_branch: [shadowlands]
         architecture: [x64, arm64]
         include:
           - qt: qt6
