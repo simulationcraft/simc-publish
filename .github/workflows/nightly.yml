@@ -149,7 +149,17 @@ jobs:
         run: |
           mkdir ${{ env.INSTALL }}
           mkdir ${{ env.uploadDir }}
-
+          
+      - name: Extract Simc Version info and setup output information
+        id: simc_info
+        env:
+          configHeader: engine/config.hpp
+        run: |
+          export SIMC_MAJOR=$(grep -E -e "^#define SC_MAJOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MAJOR_VERSION \"([0-9]+)\"/\1/g")
+          export SIMC_MINOR=$(grep -E -e "^#define SC_MINOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MINOR_VERSION \"([0-9]+)\"/\1/g")
+          export SIMC_VERSION=$SIMC_MAJOR.$SIMC_MINOR
+          echo "$SIMC_VERSION" > ./simc-version
+          
       - name: Generate project files
         run: |
           cmake -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja -DBUILD_GUI=${{ matrix.buildGui }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${{ steps.simc_info.outputs.install_dir}} -DSC_DEFAULT_APIKEY=${{ secrets.SC_DEFAULT_APIKEY }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=1
@@ -207,6 +217,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.UPLOAD_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $"rm simc-$SIMCVERSION-${{ matrix.package_suffix }}-*.${{ matrix.file_extension }}"
+          sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $"rm simc-$SIMCVERSION.*-${{ matrix.package_suffix }}.${{ matrix.file_extension }}"
           sshpass -e sftp -q ${{ secrets.UPLOAD_USER }}@${{ secrets.UPLOAD_HOST }}:${{ env.remote-dir }} <<< $'put ${{ env.local-dir }}/*.${{ matrix.file_extension }}'
 
         env:
