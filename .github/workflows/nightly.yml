@@ -179,8 +179,9 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
-          path: |
+          path: |    
             ${{ env.CMAKE_BUILD_DIR }}/*.7z
+            ${{ env.INSTALL }}\simc-version
 
   nightly-upload:
     name: Nightly Upload ${{ matrix.source_branch }} ${{ matrix.package_suffix }}
