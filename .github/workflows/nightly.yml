@@ -162,7 +162,7 @@ jobs:
           
       - name: Generate project files
         run: |
-          cmake -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja -DBUILD_GUI=${{ matrix.buildGui }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${{ steps.simc_info.outputs.install_dir}} -DSC_DEFAULT_APIKEY=${{ secrets.SC_DEFAULT_APIKEY }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=1
+          cmake -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja -DBUILD_GUI=${{ matrix.buildGui }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${{ steps.simc_info.outputs.install_dir}} -DSC_DEFAULT_APIKEY=${{ secrets.SC_DEFAULT_APIKEY }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=1 -DCPACK_SYSTEM_NAME=${{ matrix.package_suffix }}
           
       - name: Build
         run: |
