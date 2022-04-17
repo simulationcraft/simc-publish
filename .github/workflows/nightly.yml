@@ -157,6 +157,7 @@ jobs:
         run: |
           $env:simc_major = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MAJOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           $env:simc_minor = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
+          mkdir ${{ env.CMAKE_BUILD_DIR }}
           echo "$env:simc_major.$env:simc_minor" > ${{ env.CMAKE_BUILD_DIR }}/simc-version
           
       - name: Generate project files
