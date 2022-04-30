@@ -55,7 +55,7 @@ jobs:
             buildGui: ON
             os: macos-latest
             file_extension: dmg
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
         with:
