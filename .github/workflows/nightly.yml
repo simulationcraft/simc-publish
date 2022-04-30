@@ -83,8 +83,8 @@ jobs:
             ${{ steps.simc_info.outputs.simc_nightly_file }}
             ./simc-version
 
-  nightly-build-windows:
-    name: Windows Nightly ${{ matrix.architecture }} ${{ matrix.source_branch }} ${{ matrix.qt }}
+  nightly-build:
+    name:  Nightly ${{ matrix.target }} ${{ matrix.source_branch }}
     env:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}/install
@@ -136,7 +136,7 @@ jobs:
         uses: lukka/get-cmake@latest
        
       - name: Add MSBuild and MS C++ Compiler to path
-        if: ${{ matrix.os == "windows-latest" }}
+        if: ${{ matrix.os == 'windows-latest' }}
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: ${{ matrix.cl_architecture }}
