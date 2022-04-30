@@ -55,7 +55,7 @@ jobs:
             smokeTest: true
             buildGui: ON
             os: macos-latest
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v2
