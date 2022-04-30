@@ -23,7 +23,7 @@ jobs:
     env:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}/install
-        CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
+        CMAKE_BUILD_DIR: ./builddir
         uploadDir: ${{ github.workspace }}/upload
     strategy:        
       fail-fast: false
@@ -40,6 +40,7 @@ jobs:
             buildGui: ON
             os: windows-latest
             file_extension: 7z
+            cli_binary: simc.exe
           - target: winarm64
             cl_architecture: amd64_arm64
             package_suffix: winarm64
@@ -48,6 +49,7 @@ jobs:
             buildGui: OFF
             os: windows-latest
             file_extension: 7z
+            cli_binary: simc.exe
           - target: macos
             package_suffix: macos
             qt_arch: ''
@@ -55,6 +57,7 @@ jobs:
             buildGui: ON
             os: macos-latest
             file_extension: dmg
+            cli_binary: simc
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -113,7 +116,7 @@ jobs:
       - name: Smoke Test
         if: ${{ matrix.smokeTest }}
         run: |
-          & "${{ env.CMAKE_BUILD_DIR }}/simc.exe" ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
+          & "${{ env.CMAKE_BUILD_DIR }}/${{ matrix.cli_binary }}" ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
           
       - name: Package
         run: |
