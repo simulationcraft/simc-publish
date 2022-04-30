@@ -40,23 +40,24 @@ jobs:
             smokeTest: true
             buildGui: ON
             os: windows-latest
+            file_extension: 7z
           - target: winarm64
             cl_architecture: amd64_arm64
             package_suffix: winarm64
-            # Use x64 qt installation for arm, since we can currently build cli only anyway, and require host qmake. If we ever want to fully build the GUI, we need to somehow get both win64_msvc2019_arm64 Qt as well as win64_msvc2019_64 for qmake set up. jurplel/install-qt-actio does not set up the qmake.bat from the arm64 install to correctly point to the x64 qmake.exe, and maybe does not even install it at all.
             qt_arch: win64_msvc2019_64
             smokeTest: false
             buildGui: OFF
             qt_modules: ''
-            os: windows-latest          
+            os: windows-latest
+            file_extension: 7z
           - target: macos
             package_suffix: macos
             qt_arch: ''
             smokeTest: true
             buildGui: ON
             os: macos-latest
+            file_extension: dmg
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v2
         with:
@@ -123,7 +124,7 @@ jobs:
         with:
           name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
           path: |    
-            ${{ env.CMAKE_BUILD_DIR }}/*.7z
+            ${{ env.CMAKE_BUILD_DIR }}/*.${{ matrix.file_extension }}
             ${{ env.CMAKE_BUILD_DIR }}/simc-version
 
   nightly-upload:
