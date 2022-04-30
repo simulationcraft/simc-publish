@@ -18,71 +18,6 @@ env:
   IMAGE_NAME: simc
 
 jobs:
-  nightly-build-macos:
-    name: MacOS Nightly ${{ matrix.source_branch }}
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        source_branch: [shadowlands]
-        include:
-          - source_branch: shadowlands
-            run_smokeTest: true
-          - architecture: macos
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          repository: simulationcraft/simc
-          ref: ${{ matrix.source_branch }}
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v2
-        with:
-          modules: qtwebengine qtwebchannel qtpositioning
-          version: 6.2.0
-          aqtversion: '==2.0.0'
-          setup-python: 'false'
-          
-      - name: Get git hash
-        id: git_hash
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-
-      - name: Extract Simc Version info and setup output information
-        id: simc_info
-        env:
-          configHeader: engine/config.hpp
-        run: |
-          export SIMC_MAJOR=$(grep -E -e "^#define SC_MAJOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MAJOR_VERSION \"([0-9]+)\"/\1/g")
-          export SIMC_MINOR=$(grep -E -e "^#define SC_MINOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MINOR_VERSION \"([0-9]+)\"/\1/g")
-          export SIMC_VERSION=$SIMC_MAJOR-$SIMC_MINOR
-          echo "::set-output name=simc_version::$(echo "$SIMC_VERSION")"
-          echo "::set-output name=simc_output_file::$(echo "simc-$SIMC_VERSION-osx-x86.dmg")"
-          echo "::set-output name=simc_nightly_file::$(echo "simc-$SIMC_VERSION-${{ matrix.architecture }}-${{ steps.git_hash.outputs.sha_short }}.dmg")"
-          echo "$SIMC_VERSION" > ./simc-version
-
-      - name: Build and create a release package
-        env:
-          SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
-        run: |
-          $Qt6_DIR/bin/qmake LTO=1 simulationcraft.pro QMAKE_APPLE_DEVICE_ARCHS="x86_64 arm64"
-          make -j $(sysctl -n hw.ncpu) create_release
-
-      - name: Smoke Test
-        if: ${{ matrix.run_smokeTest }}
-        run: |
-          ./simc ${{ env.SIMC_PROFILE }} iterations=5 output=/dev/null html=/dev/null json2=/dev/null cleanup_threads=1
-
-      - name: Rename DMG file to nightly format
-        run: |
-          mv ${{ steps.simc_info.outputs.simc_output_file }} ${{ steps.simc_info.outputs.simc_nightly_file }}
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: simc-nightly-${{ matrix.architecture }}-${{ matrix.source_branch }}
-          path: |
-            ${{ steps.simc_info.outputs.simc_nightly_file }}
-            ./simc-version
-
   nightly-build:
     name:  Nightly ${{ matrix.target }} ${{ matrix.source_branch }}
     env:
@@ -192,7 +127,7 @@ jobs:
   nightly-upload:
     name: Nightly Upload ${{ matrix.source_branch }} ${{ matrix.package_suffix }}
     runs-on: ubuntu-latest
-    needs: [nightly-build, nightly-build-macos]
+    needs: [nightly-build]
     if: ${{ github.event.inputs.dryRun != 'true' }}
     strategy:
       matrix:
@@ -236,7 +171,7 @@ jobs:
     # TODO: this approach could be improved by doing a matrix build like the above jobs do
     # matrix could be branch and threads
     # threads could be used for different tagged versions too
-    needs: [nightly-build, nightly-build-macos]
+    needs: [nightly-build]
     runs-on: ubuntu-latest
 
     steps:
