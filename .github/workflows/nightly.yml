@@ -31,7 +31,6 @@ jobs:
         source_branch: [shadowlands]
         target: [win64, winarm64, macos]
         qt_version: [6.2.4]
-        qt_modules: ['qtwebengine qtwebchannel qtpositioning']
         include:
           - target: win64
             cl_architecture: x64
@@ -47,7 +46,6 @@ jobs:
             qt_arch: win64_msvc2019_64
             smokeTest: false
             buildGui: OFF
-            qt_modules: ''
             os: windows-latest
             file_extension: 7z
           - target: macos
@@ -80,8 +78,9 @@ jobs:
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
+        if: ${{ matrix.buildGui == "ON" }}
         with:
-          modules: ${{ matrix.qt_modules }}
+          modules: qtwebengine qtwebchannel qtpositioning
           arch: ${{ matrix.qt_arch }}
           setup-python: 'false'
           version: ${{ matrix.qt_version }}
