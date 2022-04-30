@@ -101,7 +101,7 @@ jobs:
           export SIMC_MAJOR=$(grep -E -e "^#define SC_MAJOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MAJOR_VERSION \"([0-9]+)\"/\1/g")
           export SIMC_MINOR=$(grep -E -e "^#define SC_MINOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MINOR_VERSION \"([0-9]+)\"/\1/g")
           mkdir ${{ env.CMAKE_BUILD_DIR }}
-          echo "$SIMC_MAJOR.$SIMC_MINOR" > ${{ env.CMAKE_BUILD_DIR }}/simc-version
+          echo "$SIMC_MAJOR.$SIMC_MINOR" > "${{ env.CMAKE_BUILD_DIR }}/simc-version"
           
       - name: Generate project files
         run: |
