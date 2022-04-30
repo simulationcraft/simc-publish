@@ -116,7 +116,7 @@ jobs:
       - name: Smoke Test
         if: ${{ matrix.smokeTest }}
         run: |
-          & "${{ env.CMAKE_BUILD_DIR }}/${{ matrix.cli_binary }}" ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
+          ${{ env.CMAKE_BUILD_DIR }}/${{ matrix.cli_binary }} ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
           
       - name: Package
         run: |
