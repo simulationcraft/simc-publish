@@ -41,6 +41,7 @@ jobs:
             os: windows-latest
             file_extension: 7z
             cli_binary: simc.exe
+            cpack_generator: 7Z
           - target: winarm64
             cl_architecture: amd64_arm64
             package_suffix: winarm64
@@ -50,6 +51,7 @@ jobs:
             os: windows-latest
             file_extension: 7z
             cli_binary: simc.exe
+            cpack_generator: 7Z
           - target: macos
             package_suffix: macos
             qt_arch: ''
@@ -58,6 +60,7 @@ jobs:
             os: macos-latest
             file_extension: dmg
             cli_binary: simc
+            cpack_generator: DragNDrop
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -107,7 +110,7 @@ jobs:
           
       - name: Generate project files
         run: |
-          cmake -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja -DBUILD_GUI=${{ matrix.buildGui }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${{ steps.simc_info.outputs.install_dir}} -DSC_DEFAULT_APIKEY=${{ secrets.SC_DEFAULT_APIKEY }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=1 -DCPACK_SYSTEM_NAME=${{ matrix.package_suffix }}
+          cmake -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja -DBUILD_GUI=${{ matrix.buildGui }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${{ steps.simc_info.outputs.install_dir}} -DSC_DEFAULT_APIKEY=${{ secrets.SC_DEFAULT_APIKEY }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=1 -DCPACK_SYSTEM_NAME=${{ matrix.package_suffix }} -DCPACK_GENERATOR=${{ matrix.cpack_generator }}
           
       - name: Build
         run: |
