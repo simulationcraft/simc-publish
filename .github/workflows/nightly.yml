@@ -78,7 +78,7 @@ jobs:
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
-        if: ${{ matrix.buildGui == "ON" }}
+        if: ${{ matrix.buildGui == 'ON' }}
         with:
           modules: qtwebengine qtwebchannel qtpositioning
           arch: ${{ matrix.qt_arch }}
