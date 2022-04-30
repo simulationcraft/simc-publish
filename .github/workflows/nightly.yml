@@ -85,7 +85,6 @@ jobs:
 
   nightly-build-windows:
     name: Windows Nightly ${{ matrix.architecture }} ${{ matrix.source_branch }} ${{ matrix.qt }}
-    runs-on: windows-latest
     env:
         SIMCDIR: ${{ github.workspace }}
         INSTALL: ${{ github.workspace }}/install
@@ -94,22 +93,19 @@ jobs:
     strategy:        
       fail-fast: false
       matrix:
-        qt: [qt6]
-        targetConfiguration: [Release]
         source_branch: [shadowlands]
-        architecture: [x64, arm64]
+        target: [win64, winarm64, macos]
+        qt_version: [6.2.4]
+        qt_modules: [qtwebengine qtwebchannel qtpositioning]
         include:
-          - qt: qt6
-            qt_version: 6.2.4
-            qt_dir_variable: QT6_DIR
-            qt_modules: qtwebengine qtwebchannel qtpositioning
-          - architecture: x64
+          - target: win64
             cl_architecture: x64
             package_suffix: win64
             qt_arch: win64_msvc2019_64
             smokeTest: true
             buildGui: ON
-          - architecture: arm64
+            os: windows-latest
+          - target: winarm64
             cl_architecture: amd64_arm64
             package_suffix: winarm64
             # Use x64 qt installation for arm, since we can currently build cli only anyway, and require host qmake. If we ever want to fully build the GUI, we need to somehow get both win64_msvc2019_arm64 Qt as well as win64_msvc2019_64 for qmake set up. jurplel/install-qt-actio does not set up the qmake.bat from the arm64 install to correctly point to the x64 qmake.exe, and maybe does not even install it at all.
@@ -117,6 +113,14 @@ jobs:
             smokeTest: false
             buildGui: OFF
             qt_modules: ""
+            os: windows-latest          
+          - target: macos
+            package_suffix: macos
+            qt_arch: ""
+            smokeTest: true
+            buildGui: ON
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
@@ -132,6 +136,7 @@ jobs:
         uses: lukka/get-cmake@latest
        
       - name: Add MSBuild and MS C++ Compiler to path
+        if: ${{ matrix.os == "windows-latest" }}
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: ${{ matrix.cl_architecture }}
