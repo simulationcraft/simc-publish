@@ -31,8 +31,7 @@ jobs:
         source_branch: [shadowlands]
         target: [win64, winarm64, macos]
         qt_version: [6.2.4]
-        qt_modules: [qtwebengine qtwebchannel qtpositioning]
-        os: [windows-latest, macos-latest]
+        qt_modules: ['qtwebengine qtwebchannel qtpositioning']
         include:
           - target: win64
             cl_architecture: x64
@@ -48,11 +47,11 @@ jobs:
             qt_arch: win64_msvc2019_64
             smokeTest: false
             buildGui: OFF
-            qt_modules: ""
+            qt_modules: ''
             os: windows-latest          
           - target: macos
             package_suffix: macos
-            qt_arch: ""
+            qt_arch: ''
             smokeTest: true
             buildGui: ON
             os: macos-latest
