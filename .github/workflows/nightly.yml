@@ -60,7 +60,7 @@ jobs:
             os: macos-latest
             file_extension: dmg
             cli_binary: simc
-            cpack_generator: DragNDrop
+            cpack_generator: Bundle
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
