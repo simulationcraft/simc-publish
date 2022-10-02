@@ -39,7 +39,7 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           modules: qtwebengine qtwebchannel qtpositioning
-          version: 6.3.1
+          version: 6.4.0
           aqtversion: '==2.0.0'
           setup-python: 'false'
           
@@ -100,7 +100,7 @@ jobs:
         architecture: [x64, arm64]
         include:
           - qt: qt6
-            qt_version: 6.3.1
+            qt_version: 6.4.0
             qt_dir_variable: QT6_DIR
             qt_modules: qtwebengine qtwebchannel qtpositioning
           - architecture: x64
