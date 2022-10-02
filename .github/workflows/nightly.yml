@@ -30,7 +30,7 @@ jobs:
           - architecture: macos
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: simulationcraft/simc
           ref: ${{ matrix.source_branch }}
@@ -39,7 +39,7 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           modules: qtwebengine qtwebchannel qtpositioning
-          version: 6.3.1
+          version: 6.4.0
           aqtversion: '==2.0.0'
           setup-python: 'false'
           
@@ -76,7 +76,7 @@ jobs:
         run: |
           mv ${{ steps.simc_info.outputs.simc_output_file }} ${{ steps.simc_info.outputs.simc_nightly_file }}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: simc-nightly-${{ matrix.architecture }}-${{ matrix.source_branch }}
           path: |
@@ -100,7 +100,7 @@ jobs:
         architecture: [x64, arm64]
         include:
           - qt: qt6
-            qt_version: 6.3.1
+            qt_version: 6.4.0
             qt_dir_variable: QT6_DIR
             qt_modules: qtwebengine qtwebchannel qtpositioning
           - architecture: x64
@@ -119,7 +119,7 @@ jobs:
             qt_modules: ""
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: simulationcraft/simc
           ref: ${{ matrix.source_branch }}
@@ -177,7 +177,7 @@ jobs:
         run: |
           cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target package
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
           path: |    
@@ -206,7 +206,7 @@ jobs:
         run: |
           sudo apt install sshpass
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
           path: ${{ github.workspace }}/artifacts
