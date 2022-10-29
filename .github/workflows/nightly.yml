@@ -23,7 +23,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        source_branch: [shadowlands]
+        source_branch: [shadowlands, dragonflight]
         include:
           - source_branch: shadowlands
             run_smokeTest: true
@@ -96,7 +96,7 @@ jobs:
       matrix:
         qt: [qt6]
         targetConfiguration: [Release]
-        source_branch: [shadowlands]
+        source_branch: [shadowlands, dragonflight]
         architecture: [x64, arm64]
         include:
           - qt: qt6
