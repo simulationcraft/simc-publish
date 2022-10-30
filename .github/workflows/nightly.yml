@@ -242,6 +242,7 @@ jobs:
         with:
           repository: simulationcraft/simc
           ref: ${{ matrix.source_branch }}
+          path: 'simc'
 
       - name: Get SimulationCraft version
         run: |
