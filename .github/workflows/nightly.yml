@@ -117,6 +117,8 @@ jobs:
             smokeTest: false
             buildGui: OFF
             qt_modules: ""
+          - source_branch: dragonflight
+            smokeTest: false
 
     steps:
       - uses: actions/checkout@v3
