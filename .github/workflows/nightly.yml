@@ -233,11 +233,16 @@ jobs:
     # threads could be used for different tagged versions too
     needs: [nightly-build-windows, nightly-build-macos]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        source_branch: [shadowlands]
 
     steps:
-      - name: Download SimulationCraft
-        run: |
-          git clone --depth 1 --single-branch https://github.com/simulationcraft/simc.git simc
+      - uses: actions/checkout@v3
+        with:
+          repository: simulationcraft/simc
+          ref: ${{ matrix.source_branch }}
+          path: 'simc'
 
       - name: Get SimulationCraft version
         run: |
