@@ -23,10 +23,10 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        source_branch: [shadowlands, dragonflight]
+        source_branch: [dragonflight]
         include:
-          - source_branch: shadowlands
-            run_smokeTest: true
+          - source_branch: dragonflight
+            run_smokeTest: false
           - architecture: macos
 
     steps:
@@ -96,7 +96,7 @@ jobs:
       matrix:
         qt: [qt6]
         targetConfiguration: [Release]
-        source_branch: [shadowlands, dragonflight]
+        source_branch: [dragonflight]
         architecture: [x64, arm64]
         include:
           - qt: qt6
@@ -194,7 +194,7 @@ jobs:
     strategy:
       matrix:
         package_suffix: [win64, winarm64, macos]
-        source_branch: [shadowlands, dragonflight]
+        source_branch: [dragonflight]
         include:
           - package_suffix: win64
             file_extension: 7z
