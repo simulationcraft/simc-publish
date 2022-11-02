@@ -194,7 +194,7 @@ jobs:
     strategy:
       matrix:
         package_suffix: [win64, winarm64, macos]
-        source_branch: [shadowlands]
+        source_branch: [shadowlands, dragonflight]
         include:
           - package_suffix: win64
             file_extension: 7z
