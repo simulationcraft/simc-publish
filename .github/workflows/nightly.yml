@@ -237,7 +237,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        source_branch: [shadowlands]
+        source_branch: [dragonflight]
 
     steps:
       - uses: actions/checkout@v3
