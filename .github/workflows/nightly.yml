@@ -45,7 +45,7 @@ jobs:
           
       - name: Get git hash
         id: git_hash
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Extract Simc Version info and setup output information
         id: simc_info
@@ -55,9 +55,9 @@ jobs:
           export SIMC_MAJOR=$(grep -E -e "^#define SC_MAJOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MAJOR_VERSION \"([0-9]+)\"/\1/g")
           export SIMC_MINOR=$(grep -E -e "^#define SC_MINOR_VERSION" "${{ env.configHeader }}" | sed -E -e "s/#define SC_MINOR_VERSION \"([0-9]+)\"/\1/g")
           export SIMC_VERSION=$SIMC_MAJOR-$SIMC_MINOR
-          echo "::set-output name=simc_version::$(echo "$SIMC_VERSION")"
-          echo "::set-output name=simc_output_file::$(echo "simc-$SIMC_VERSION-osx-x86.dmg")"
-          echo "::set-output name=simc_nightly_file::$(echo "simc-$SIMC_VERSION-${{ matrix.architecture }}-${{ steps.git_hash.outputs.sha_short }}.dmg")"
+          echo "simc_version=$(echo "$SIMC_VERSION")" >> $GITHUB_OUTPUT
+          echo "simc_output_file=$(echo "simc-$SIMC_VERSION-osx-x86.dmg")" >> $GITHUB_OUTPUT
+          echo "simc_nightly_file=$(echo "simc-$SIMC_VERSION-${{ matrix.architecture }}-${{ steps.git_hash.outputs.sha_short }}.dmg")" >> $GITHUB_OUTPUT
           echo "$SIMC_VERSION" > ./simc-version
 
       - name: Build and create a release package
@@ -128,7 +128,7 @@ jobs:
 
       - name: Get git hash
         id: git_hash
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
         
       - name: Get cmake
         uses: lukka/get-cmake@latest
