@@ -5,9 +5,6 @@ on:
     - cron: '0 0 * * *' # run at 0 AM UTC
   workflow_dispatch:
     inputs:
-      justification:
-        description: "Reason for manual run"
-        required: true
       dryRun:
         description: "If true, do not upload files"
         default: true
@@ -43,13 +40,11 @@ jobs:
           echo "break-system-packages = true" >> "$HOME/Library/Application Support/pip/pip.conf"
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           modules: qtwebengine qtwebchannel qtpositioning
           version: 6.5.*
-          aqtversion: '==3.1.*'
-          setup-python: false
-
+          
       - name: Get git hash
         id: git_hash
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
@@ -70,8 +65,9 @@ jobs:
       - name: Build and create a release package
         env:
           SC_DEFAULT_APIKEY: ${{ secrets.SC_DEFAULT_APIKEY }}
+          MACOSX_DEPLOYMENT_TARGET: 10.15
         run: |
-          $Qt6_DIR/bin/qmake LTO=1 simulationcraft.pro QMAKE_APPLE_DEVICE_ARCHS="x86_64 arm64"
+          qmake LTO=1 simulationcraft.pro QMAKE_APPLE_DEVICE_ARCHS="x86_64 arm64"
           make -j $(sysctl -n hw.ncpu) create_release
 
       - name: Smoke Test
@@ -107,8 +103,7 @@ jobs:
         architecture: [x64, arm64]
         include:
           - qt: qt6
-            qt_version: 6.4.0
-            qt_dir_variable: QT6_DIR
+            qt_version: 6.5.*
             qt_modules: qtwebengine qtwebchannel qtpositioning
           - architecture: x64
             cl_architecture: x64
@@ -146,13 +141,11 @@ jobs:
           arch: ${{ matrix.cl_architecture }}
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           modules: ${{ matrix.qt_modules }}
           arch: ${{ matrix.qt_arch }}
-          setup-python: 'false'
           version: ${{ matrix.qt_version }}
-          aqtversion: '==3.0.*'
 
       - name: Create Install and Upload Directory
         run: |
