@@ -145,7 +145,7 @@ jobs:
           arch: ${{ matrix.qt_arch }}
           setup-python: 'false'
           version: ${{ matrix.qt_version }}
-          aqtversion: '==2.0.0'
+          aqtversion: '==3.0.*'
 
       - name: Create Install and Upload Directory
         run: |
