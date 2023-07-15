@@ -40,7 +40,7 @@ jobs:
         with:
           modules: qtwebengine qtwebchannel qtpositioning
           version: 6.4.0
-          aqtversion: '==2.0.0'
+          aqtversion: '==3.0.*'
           setup-python: 'false'
           
       - name: Get git hash
