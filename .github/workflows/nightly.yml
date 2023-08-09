@@ -23,7 +23,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        source_branch: [dragonflight]
+        source_branch: [qt65-macos-fix]
         include:
           - source_branch: dragonflight
             run_smokeTest: false
