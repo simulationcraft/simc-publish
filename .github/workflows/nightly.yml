@@ -39,7 +39,8 @@ jobs:
       - name: Disable PEP-0688
         run: |
           mkdir -p "$HOME/Library/Application Support/pip"
-          echo "break-system-packages = true" > "$HOME/Library/Application Support/pip/pip.conf"
+          echo "[global]" > "$HOME/Library/Application Support/pip/pip.conf"
+          echo "break-system-packages = true" >> "$HOME/Library/Application Support/pip/pip.conf"
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
