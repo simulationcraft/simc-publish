@@ -36,10 +36,8 @@ jobs:
           ref: ${{ matrix.source_branch }}
 
       # Workaround 2024-04-25 at https://github.com/jurplel/install-qt-action/issues/230
-      - name: Install prerequisties
-        run: |
-          brew list -1 | grep python | while read formula; do brew unlink $formula; brew link --overwrite $formula; done
-          brew update
+      - name: Disable PEP-0688
+        run: echo "break-system-packages = true" > "$HOME/Library/Application Support/pip/pip.conf"
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
