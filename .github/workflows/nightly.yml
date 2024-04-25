@@ -46,8 +46,8 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           modules: qtwebengine qtwebchannel qtpositioning
-          version: 6.4.0
-          aqtversion: '==3.0.*'
+          version: 6.5.*
+          aqtversion: '==3.1.*'
           setup-python: false
 
       - name: Get git hash
