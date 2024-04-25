@@ -37,7 +37,9 @@ jobs:
 
       # Workaround 2024-04-25 at https://github.com/jurplel/install-qt-action/issues/230
       - name: Disable PEP-0688
-        run: echo "break-system-packages = true" > "$HOME/Library/Application Support/pip/pip.conf"
+        run: |
+          mkdir -p "$HOME/Library/Application Support/pip"
+          echo "break-system-packages = true" > "$HOME/Library/Application Support/pip/pip.conf"
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
