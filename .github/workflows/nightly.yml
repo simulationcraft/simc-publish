@@ -23,9 +23,9 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        source_branch: [dragonflight]
+        source_branch: [thewarwithin]
         include:
-          - source_branch: dragonflight
+          - source_branch: thewarwithin
             run_smokeTest: false
           - architecture: macos
 
@@ -103,7 +103,7 @@ jobs:
       matrix:
         qt: [qt6]
         targetConfiguration: [Release]
-        source_branch: [dragonflight]
+        source_branch: [thewarwithin]
         architecture: [x64, arm64]
         include:
           - qt: qt6
@@ -124,7 +124,7 @@ jobs:
             smokeTest: false
             buildGui: OFF
             qt_modules: ""
-          - source_branch: dragonflight
+          - source_branch: thewarwithin
             smokeTest: false
 
     steps:
@@ -201,7 +201,7 @@ jobs:
     strategy:
       matrix:
         package_suffix: [win64, winarm64, macos]
-        source_branch: [dragonflight]
+        source_branch: [thewarwithin]
         include:
           - package_suffix: win64
             file_extension: 7z
@@ -244,7 +244,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        source_branch: [dragonflight]
+        source_branch: [thewarwithin]
 
     steps:
       - uses: actions/checkout@v3
