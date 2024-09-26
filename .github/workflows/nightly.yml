@@ -241,6 +241,7 @@ jobs:
     # matrix could be branch and threads
     # threads could be used for different tagged versions too
     needs: [nightly-build-windows, nightly-build-macos]
+    if: ${{ github.event.inputs.dryRun != 'true' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
