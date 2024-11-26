@@ -42,7 +42,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          modules: qtwebengine qtwebchannel qtpositioning
+          modules: qtwebenginecore
           version: 6.8.*
           
       - name: Get git hash
@@ -104,7 +104,7 @@ jobs:
         include:
           - qt: qt6
             qt_version: 6.8.*
-            qt_modules: qtwebengine qtwebchannel qtpositioning
+            qt_modules: qtwebenginecore
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
