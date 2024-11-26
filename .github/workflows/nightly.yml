@@ -27,7 +27,7 @@ jobs:
           - architecture: macos
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: simulationcraft/simc
           ref: ${{ matrix.source_branch }}
@@ -79,7 +79,7 @@ jobs:
         run: |
           mv ${{ steps.simc_info.outputs.simc_output_file }} ${{ steps.simc_info.outputs.simc_nightly_file }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: simc-nightly-${{ matrix.architecture }}-${{ matrix.source_branch }}
           path: |
@@ -123,7 +123,7 @@ jobs:
             smokeTest: false
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: simulationcraft/simc
           ref: ${{ matrix.source_branch }}
@@ -179,7 +179,7 @@ jobs:
         run: |
           cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target package
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
           path: |    
@@ -208,7 +208,7 @@ jobs:
         run: |
           sudo apt install sshpass
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
           path: ${{ github.workspace }}/artifacts
@@ -241,7 +241,7 @@ jobs:
         source_branch: [thewarwithin]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: simulationcraft/simc
           ref: ${{ matrix.source_branch }}
