@@ -43,8 +43,8 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           modules: qtwebengine qtwebchannel qtpositioning
-          version: 6.5.*
           
+          version: 6.11.*
       - name: Get git hash
         id: git_hash
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
@@ -103,19 +103,19 @@ jobs:
         architecture: [x64, arm64]
         include:
           - qt: qt6
-            qt_version: 6.5.*
+            qt_version: 6.11.*
             qt_modules: qtwebengine qtwebchannel qtpositioning
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
-            qt_arch: win64_msvc2019_64
+            qt_arch: win64_msvc2022_64
             smokeTest: true
             buildGui: ON
           - architecture: arm64
             cl_architecture: amd64_arm64
             package_suffix: winarm64
             # Use x64 qt installation for arm, since we can currently build cli only anyway, and require host qmake. If we ever want to fully build the GUI, we need to somehow get both win64_msvc2019_arm64 Qt as well as win64_msvc2019_64 for qmake set up. jurplel/install-qt-actio does not set up the qmake.bat from the arm64 install to correctly point to the x64 qmake.exe, and maybe does not even install it at all.
-            qt_arch: win64_msvc2019_64
+            qt_arch: win64_msvc2022_64
             smokeTest: false
             buildGui: OFF
             qt_modules: ""
