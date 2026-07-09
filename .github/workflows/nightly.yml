@@ -106,7 +106,7 @@ jobs:
         architecture: [x64, arm64]
         include:
           - qt: qt6
-            qt_version: 6.11.*
+            qt_version: 6.10.*
             qt_modules: qtwebengine qtwebchannel qtpositioning
           - architecture: x64
             cl_architecture: x64
