@@ -97,7 +97,7 @@ jobs:
         INSTALL: ${{ github.workspace }}/install
         CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
         uploadDir: ${{ github.workspace }}/upload
-    strategy:        
+    strategy:
       fail-fast: false
       matrix:
         qt: [qt6]
@@ -106,19 +106,19 @@ jobs:
         architecture: [x64, arm64]
         include:
           - qt: qt6
-            qt_version: 6.5.*
+            qt_version: 6.11.*
             qt_modules: qtwebengine qtwebchannel qtpositioning
           - architecture: x64
             cl_architecture: x64
             package_suffix: win64
-            qt_arch: win64_msvc2019_64
+            qt_arch: win64_msvc2022_64
             smokeTest: true
             buildGui: ON
           - architecture: arm64
             cl_architecture: amd64_arm64
             package_suffix: winarm64
-            # Use x64 qt installation for arm, since we can currently build cli only anyway, and require host qmake. If we ever want to fully build the GUI, we need to somehow get both win64_msvc2019_arm64 Qt as well as win64_msvc2019_64 for qmake set up. jurplel/install-qt-actio does not set up the qmake.bat from the arm64 install to correctly point to the x64 qmake.exe, and maybe does not even install it at all.
-            qt_arch: win64_msvc2019_64
+            # Use x64 qt installation for arm, since we can currently build cli only anyway, and require host qmake. If we ever want to fully build the GUI, we need to somehow get both win64_msvc2022_arm64 Qt as well as win64_msvc2022_64 for qmake set up. jurplel/install-qt-actio does not set up the qmake.bat from the arm64 install to correctly point to the x64 qmake.exe, and maybe does not even install it at all.
+            qt_arch: win64_msvc2022_64
             smokeTest: false
             buildGui: OFF
             qt_modules: ""
@@ -134,10 +134,10 @@ jobs:
       - name: Get git hash
         id: git_hash
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-        
+
       - name: Get cmake
         uses: lukka/get-cmake@latest
-       
+
       - name: Add MSBuild and MS C++ Compiler to path
         uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -154,7 +154,7 @@ jobs:
         run: |
           mkdir ${{ env.INSTALL }}
           mkdir ${{ env.uploadDir }}
-          
+
       - name: Extract Simc Version info and setup output information
         id: simc_info
         env:
@@ -164,11 +164,11 @@ jobs:
           $env:simc_minor = Get-Content "${{ env.configHeader }}" | Select-String '#define SC_MINOR_VERSION \"(.+)\"' | ForEach-Object {$_.Matches[0].Groups[1].Value}
           mkdir ${{ env.CMAKE_BUILD_DIR }}
           echo "$env:simc_major.$env:simc_minor" > ${{ env.CMAKE_BUILD_DIR }}/simc-version
-          
+
       - name: Generate project files
         run: |
           cmake -B "${{ env.CMAKE_BUILD_DIR }}" -GNinja -DBUILD_GUI=${{ matrix.buildGui }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${{ steps.simc_info.outputs.install_dir}} -DSC_DEFAULT_APIKEY=${{ secrets.SC_DEFAULT_APIKEY }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=1 -DCPACK_SYSTEM_NAME=${{ matrix.package_suffix }} --log-level=VERBOSE
-          
+
       - name: Build
         run: |
           cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target all
@@ -177,7 +177,7 @@ jobs:
         if: ${{ matrix.smokeTest }}
         run: |
           & "${{ env.CMAKE_BUILD_DIR }}/simc.exe" ${{ env.SIMC_PROFILE }} iterations=5 output=nul html=nul json2=nul cleanup_threads=1
-          
+
       - name: Package
         run: |
           cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target package
@@ -185,7 +185,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: simc-nightly-${{ matrix.package_suffix }}-${{ matrix.source_branch }}
-          path: |    
+          path: |
             ${{ env.CMAKE_BUILD_DIR }}/*.7z
             ${{ env.CMAKE_BUILD_DIR }}/simc-version
 
